@@ -1,6 +1,6 @@
 import json
 
-from lean_explain import assemble, blueprint, evaluate, explain, llm
+from lean_explain import assemble, blueprint, evaluate, explain, html, llm
 from lean_explain.extract import assign_steps, build_decls
 
 SOURCE = """import Mathlib.Tactic
@@ -292,3 +292,15 @@ def test_judge_scores_statement_and_step_coverage():
     }
     no_proof = evaluate.Verdict("x", "weaker", "r")
     assert no_proof.coverage is None
+
+
+def test_html_pairs_each_lean_block_with_the_step_that_cites_it():
+    plan = toy_plan()
+    page = html.render_html(plan, explain.explain_plan(plan, fake_chat([])))
+    use, even = page.split("<section>")[1:]
+    assert "<h1>toy_use</h1>" in use and "<h1>toy_even</h1>" in even
+    assert "Step 1 \u00b7 line 11" in use and '<span class="ln">11</span>' in use
+    assert '<span class="label">Statement</span><p class="statement">S(toy_use)</p>' in use
+    assert "Step 1 \u00b7 line 5" in even and "1 step(s) cited lines outside" in even
+    assert "The sum of two even numbers" not in page
+    assert '<span class="kw">exact</span> toy_even' in use

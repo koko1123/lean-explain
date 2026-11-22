@@ -6,7 +6,7 @@ import subprocess
 from dataclasses import asdict
 from pathlib import Path
 
-from lean_explain import assemble, blueprint, evaluate, explain, extract, llm
+from lean_explain import assemble, blueprint, evaluate, explain, extract, html, llm
 
 VENICE_JUDGE_MODEL = "gemini-4-carbon"
 
@@ -69,11 +69,12 @@ def run_explain(args: argparse.Namespace, cache: Path) -> None:
     out = args.out / config.model.replace("/", "_")
     out.mkdir(parents=True, exist_ok=True)
     (out / f"{args.decl}.md").write_text(assemble.render_markdown(plan, explanations))
+    (out / f"{args.decl}.html").write_text(html.render_html(plan, explanations))
     side = assemble.sidecar(plan, explanations, config.model)
     (out / f"{args.decl}.json").write_text(json.dumps(side, ensure_ascii=False, indent=2))
     with (out / "pairs.jsonl").open("a") as handle:
         handle.write(assemble.pairs_jsonl(plan, explanations))
-    print(f"wrote {out / f'{args.decl}.md'} (grounding {side['grounding']:.0%})")
+    print(f"wrote {out / f'{args.decl}.md'} and .html (grounding {side['grounding']:.0%})")
 
 
 def run_eval(args: argparse.Namespace, cache: Path) -> None:
