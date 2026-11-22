@@ -32,19 +32,46 @@ proof instead of explaining the formal one.
 
 ## Results so far
 
-One blueprint chapter has been evaluated: the four theorems of `PFR.HundredPercent`,
-generated with `deepseek-v4-1-flash-1017-ultrafast` and judged by `gemini-4-carbon`.
+### Against a human-written blueprint
 
-| Metric | Result |
-|---|---|
-| Statement equivalent to the blueprint | 4 of 4 |
-| Blueprint proof steps found in the explanation | 100% |
-| Steps citing valid source lines | 100% |
-| Explanations with a mathematical error flagged | 1 of 4 |
+Two modules of [teorth/pfr](https://github.com/teorth/pfr) have been evaluated against
+the project's blueprint, generated with `deepseek-v4-1-flash-1017-ultrafast` and judged by
+`gemini-4-carbon`. A blueprint result is scored once, over all the Lean declarations that
+formalize it.
 
-This is a small, easy sample, and the judge has not been calibrated against human labels,
-so read it as evidence that the pipeline works end to end and not as a benchmark. The
-flagged error is an imprecise sentence in a summary whose corresponding step is correct.
+| Module | Results judged | Statement equivalent | Proof steps covered | With an error flagged | Steps citing valid lines |
+|---|---|---|---|---|---|
+| `PFR.HundredPercent` | 4 | 4 | 100% | 1 | 100% |
+| `PFR.ForMathlib.Entropy.RuzsaDist` | 15 of 16 | 14 | 94% | 3 | 100% |
+
+The judge has not been calibrated against human labels, so these are not benchmark
+numbers. What the second module showed:
+
+- The flagged errors are mostly sentences where the explainer added a justification the
+  proof does not contain, and got it wrong. Telling the generator to report what an
+  automated tactic closed, instead of supplying a reason, reduced them but did not remove
+  them.
+- The one statement judged different is a real gap between the formalization and the
+  blueprint: the Lean lemmas drop a characteristic 2 hypothesis and prove only the
+  inequalities, where the blueprint also states two equalities.
+- The `HundredPercent` row predates the last prompt and scoring changes.
+
+### On a machine-written proof
+
+![The explanation of divergentRamseyRoot from OpenAI's Erdős problem 183 proof](docs/erdos-183.png)
+
+[openai/ten-proofs](https://github.com/openai/ten-proofs) has no blueprint to score
+against, so this is a reading check, not a judged result. The tool extracted
+`MulticolorTriangleRamsey.lean` (152 declarations, 1,480 tactics) and explained the main
+theorem `erdos_183` three levels deep, 11 lemmas, in 46 seconds for $0.32. Three of the
+lemmas and the four definitions they rest on were checked line by line against the Lean
+and matched.
+
+### Cost
+
+On Venice, explaining and judging the 24 declarations of the Ruzsa distance module cost
+$2.04: $1.18 for the generator and $0.86 for the judge. `--budget` caps a run, and a capped
+run keeps its finished results and resumes from cache.
 
 ## Usage
 
