@@ -9,48 +9,134 @@ from pathlib import Path
 
 from lean_explain.extract import Decl, Step
 
-PROMPT_VERSION = "3"
+PROMPT_VERSION = "4"
 
 SYSTEM = """\
-You explain Lean 4 proofs to a mathematically literate reader who does not read Lean.
-You are given one declaration: its Lean statement, its source with line numbers, and a
-record of every tactic with the goal state Lean reported just before it ran.
+You are writing the reader's guide to a formal proof. The reader is a research
+mathematician who knows the subject but does not read Lean 4. They will use your
+explanation to learn what the formal proof actually does and to compare it with the
+paper proof they know, so an elegant explanation of a different argument is worse than
+useless to them.
 
-Describe what this proof does, in the order it does it. Do not describe how you would
-prove the result, and do not add steps that are not in the record. Use the goal states to
-say what each step achieves mathematically. Group routine bookkeeping (introductions,
-rewrites that only reshape a goal, measurability side conditions) into a single step.
-In the statement, give every hypothesis the Lean statement has, including the ones Lean
-carries as instance arguments (finiteness or countability of a group, a measure being a
-probability measure, a map having finite range). Do not drop or strengthen any of them.
+You receive one declaration at a time:
+- <lean_statement>: the statement as Lean elaborated it, with every implicit and instance
+  argument shown.
+- <source>: the Lean source with line numbers.
+- <project_results>: results and definitions from the same project that this proof uses.
+  Results already explained are given in English; the others are given as Lean.
+- <notation>: notation already chosen for earlier lemmas in this write-up.
+- <tactic_record>: every tactic in the proof in source order, each with the goal state
+  Lean reported immediately before it ran. Indentation shows nesting: an indented tactic
+  runs inside the one above it.
 
-Write for a mathematician: call every object by its mathematical name, not its Lean
-identifier (the Ruzsa distance, not rdist; antisymmetry of the order, not le_antisymm).
-Name a Lean lemma only when citing it, in backticks, never inside mathematics. Write
-mathematics in standard notation as LaTeX between single dollar signs and no other
-delimiter, translating Lean notation rather than copying it, so that no unescaped LaTeX
-special character such as # appears.
-Refer to results from the same project by the English statements you are given for them.
+Follow the proof as written. Report the steps Lean took, in the order it took them, and
+use the goal states to say what each step establishes: the goal before the next tactic
+shows what the current one achieved. If the proof takes an unusual route, describe that
+route rather than the textbook one, because the reader wants to know what this proof does.
 
-Every step must cite the source lines it covers, and those lines must lie inside the
-declaration's own source range. Steps appear in source order and together cover the proof.
+One step is one mathematical move. Merge runs of bookkeeping tactics (introducing
+variables, unfolding notation, reshaping a goal, discharging measurability or positivity
+side conditions) into the move they serve, and mention the side conditions in a clause.
+A long proof should come out as a handful of steps a mathematician would recognise, not
+one step per tactic.
 
-Reply with JSON only, no prose and no code fence."""
+State the result the way a paper would: one or two sentences that set up the objects
+first ("Let $G$ be a finite abelian group and ..."). Keep every hypothesis of the Lean
+statement, including those Lean carries as instance arguments such as finiteness,
+countability, or a measure being a probability measure, because a dropped hypothesis
+makes the statement false. Put them in the setup clause in ordinary mathematical
+language, and omit only what has no mathematical content, such as universe levels and
+the names of instance arguments.
 
-FULL_SHAPE = (
-    '{"statement": "<the result in English>", "summary": "<one paragraph: the idea of '
-    'the proof>", "steps": [{"start_line": <int>, "end_line": <int>, "explanation": '
-    '"<what this step does>"}]}'
+Write mathematics, not Lean. Call each object by its mathematical name (the Ruzsa
+distance, not rdist; antisymmetry, not le_antisymm). Put mathematics in LaTeX between
+single dollar signs, in standard notation rather than Lean syntax, with no unescaped
+LaTeX special character such as #. Reuse the notation in <notation> exactly so the
+write-up reads as one document, and report any notation you introduce. When a step
+applies a named result, say what that result states and give its Lean name once in
+backticks so the reader can look it up.
+
+Cite lines. Every step gives the first and last source line it covers. The lines must
+fall inside this declaration's proof, and the steps must appear in source order and
+cover the whole proof between them. These citations are checked mechanically against
+the tactic record.
+
+The example below is deliberately elementary. It shows the granularity and register to
+aim for, not the length: real proofs need more steps and more detail per step.
+
+<example>
+<source first_line="4" last_line="9">
+    4  theorem even_add_even (a b : ℕ) (ha : Even a) (hb : Even b) : Even (a + b) := by
+    5    obtain ⟨k, hk⟩ := ha
+    6    obtain ⟨m, hm⟩ := hb
+    7    refine ⟨k + m, ?_⟩
+    8    rw [hk, hm]
+    9    ring
+</source>
+<reply>
+{"statement": "The sum of two even natural numbers is even.",
+ "steps": [
+  {"start_line": 5, "end_line": 6, "explanation": "Unpack the hypotheses: write \
+$a = k + k$ and $b = m + m$ for natural numbers $k$ and $m$."},
+  {"start_line": 7, "end_line": 9, "explanation": "Take $k + m$ as the witness for \
+$a + b$. Substituting the two equations turns the claim into \
+$(k + k) + (m + m) = (k + m) + (k + m)$, which holds in any commutative semiring."}],
+ "summary": "Write each number as a double and add the two witnesses.",
+ "notation": []}
+</reply>
+</example>"""
+
+STEPS = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "start_line": {"type": "integer"},
+            "end_line": {"type": "integer"},
+            "explanation": {"type": "string"},
+        },
+        "required": ["start_line", "end_line", "explanation"],
+        "additionalProperties": False,
+    },
+}
+NOTATION = {
+    "type": "array",
+    "description": "Notation introduced here that later lemmas should reuse.",
+    "items": {
+        "type": "object",
+        "properties": {
+            "lean": {"type": "string", "description": "The Lean notation or identifier."},
+            "latex": {"type": "string", "description": "The LaTeX used for it, without dollars."},
+            "meaning": {"type": "string", "description": "Its mathematical name."},
+        },
+        "required": ["lean", "latex", "meaning"],
+        "additionalProperties": False,
+    },
+}
+
+
+def object_schema(**properties: dict) -> dict:
+    return {
+        "type": "object",
+        "properties": properties,
+        "required": list(properties),
+        "additionalProperties": False,
+    }
+
+
+TEXT = {"type": "string"}
+# Property order is generation order: the steps are worked out before the summary.
+FULL_SCHEMA = object_schema(statement=TEXT, steps=STEPS, summary=TEXT, notation=NOTATION)
+CHUNK_SCHEMA = object_schema(steps=STEPS, progress=TEXT, notation=NOTATION)
+FINAL_SCHEMA = object_schema(statement=TEXT, summary=TEXT)
+
+FULL_TASK = (
+    "Explain this proof. Give the statement, then the steps in source order, then a "
+    "one-paragraph summary of the idea of the proof, then any notation you introduced."
 )
-CHUNK_SHAPE = (
-    '{"steps": [{"start_line": <int>, "end_line": <int>, "explanation": "<what this step '
-    'does>"}], "progress": "<two or three sentences: where the proof stands after this part>"}'
-)
-FINAL_SHAPE = (
-    '{"statement": "<the result in English>", "summary": "<one paragraph: the idea of the proof>"}'
-)
 
-Chat = Callable[[str, str], str]
+# A chat function takes the system prompt, the user prompt, and a JSON schema for the reply.
+Chat = Callable[[str, str, dict], str]
 
 
 @dataclass
@@ -68,6 +154,7 @@ class Explanation:
     statement: str
     summary: str
     steps: list[ExplainedStep] = field(default_factory=list)
+    notation: list[dict] = field(default_factory=list)
 
     @property
     def grounding(self) -> float:
@@ -177,19 +264,44 @@ def chunk_steps(steps: list[Step], max_chars: int) -> list[list[tuple[Step, int]
     return chunks
 
 
-def render_context(decl: Decl, known: dict[str, Explanation], cited: dict[str, dict]) -> str:
+def render_results(decl: Decl, known: dict[str, Explanation], cited: dict[str, dict]) -> str:
     parts = []
     for dep in decl.deps:
         if dep.name in known:
-            parts.append(f"- {dep.name}: {known[dep.name].statement}")
+            parts.append(
+                f'<result name="{dep.name}" form="english">\n{known[dep.name].statement}\n</result>'
+            )
         elif dep.name in cited:
             info = cited[dep.name]
             if info["kind"] == "def" and info.get("source"):
-                body = strip_doc(info["source"])[:1500]
-                parts.append(f"- {dep.name} (Lean definition):\n{body}")
+                body, form = strip_doc(info["source"])[:1500], "lean_definition"
             else:
-                parts.append(f"- {dep.name} (Lean statement): {info['type']}")
+                body, form = info["type"], "lean_statement"
+            parts.append(f'<result name="{dep.name}" form="{form}">\n{body}\n</result>')
     return "\n".join(parts) if parts else "(none)"
+
+
+def render_notation(notation: dict[str, dict]) -> str:
+    if not notation:
+        return "(none yet)"
+    return "\n".join(
+        f"- {entry['meaning']}: ${entry['latex']}$ (Lean: {entry['lean']})"
+        for entry in notation.values()
+    )
+
+
+def render_header(
+    decl: Decl, known: dict[str, Explanation], cited: dict[str, dict], notation: dict[str, dict]
+) -> str:
+    """The inputs that every request for this declaration shares, data before instructions."""
+    return (
+        f'<declaration name="{decl.name}" kind="{decl.kind}">\n'
+        f"<lean_statement>\n{decl.type}\n</lean_statement>\n"
+        f'<source first_line="{decl.line}" last_line="{decl.end_line}">\n'
+        f"{numbered_source(decl)}\n</source>\n</declaration>\n\n"
+        f"<project_results>\n{render_results(decl, known, cited)}\n</project_results>\n\n"
+        f"<notation>\n{render_notation(notation)}\n</notation>\n\n"
+    )
 
 
 def parse_json(text: str) -> dict:
@@ -197,7 +309,26 @@ def parse_json(text: str) -> dict:
     try:
         return json.loads(cleaned)
     except json.JSONDecodeError as error:
-        raise ValueError(f"model did not return JSON: {text[:300]!r}") from error
+        raise ValueError(f"reply is not JSON: {text[:300]!r}") from error
+
+
+def ask(chat: Chat, system: str, user: str, schema: dict) -> dict:
+    """Request a reply matching `schema`, retrying once with the problem spelled out."""
+    problem = ""
+    for _ in range(2):
+        text = chat(system, user + problem, schema)
+        try:
+            reply = parse_json(text)
+            missing = [key for key in schema["required"] if key not in reply]
+            if missing:
+                raise ValueError(f"reply is missing {missing}")
+            return reply
+        except ValueError as error:
+            problem = (
+                f"\n\nYour previous reply could not be used: {error}. Reply again with a "
+                "single JSON object that has exactly the requested fields."
+            )
+    raise ValueError(f"no usable reply after two attempts ({problem.strip()})")
 
 
 def ground(decl: Decl, raw_steps: list[dict]) -> list[ExplainedStep]:
@@ -221,18 +352,19 @@ def explain_decl(
     cited: dict[str, dict],
     chat: Chat,
     max_chars: int = 200_000,
+    notation: dict[str, dict] | None = None,
 ) -> Explanation:
-    header = (
-        f"Declaration: {decl.name} ({decl.kind})\n\n"
-        f"Lean statement:\n{decl.type}\n\n"
-        f"Source, lines {decl.line}-{decl.end_line}:\n{numbered_source(decl)}\n\n"
-        f"Results from this project that it uses:\n{render_context(decl, known, cited)}\n\n"
-    )
+    """Explain one declaration; `notation` is the glossary shared across the write-up."""
+    notation = {} if notation is None else notation
+    header = render_header(decl, known, cited, notation)
     chunks = chunk_steps(decl.steps, max_chars)
     if len(chunks) == 1:
         record = "\n\n".join(render_step(s, d) for s, d in chunks[0]) or "(term-mode proof)"
-        reply = parse_json(
-            chat(SYSTEM, f"{header}Tactic record:\n{record}\n\nReply as: {FULL_SHAPE}")
+        reply = ask(
+            chat,
+            SYSTEM,
+            f"{header}<tactic_record>\n{record}\n</tactic_record>\n\n{FULL_TASK}",
+            FULL_SCHEMA,
         )
         return Explanation(
             decl.name,
@@ -240,51 +372,80 @@ def explain_decl(
             reply["statement"],
             reply["summary"],
             ground(decl, reply["steps"]),
+            reply["notation"],
         )
 
     raw_steps: list[dict] = []
     progress: list[str] = []
+    introduced: list[dict] = []
     for index, chunk in enumerate(chunks):
         record = "\n\n".join(render_step(s, d) for s, d in chunk)
         so_far = "\n".join(progress) or "(this is the first part)"
-        reply = parse_json(
-            chat(
-                SYSTEM,
-                f"{header}This proof is long, so you see it in {len(chunks)} parts. "
-                f"This is part {index + 1}.\n\nThe proof so far:\n{so_far}\n\n"
-                f"Tactic record for this part:\n{record}\n\nReply as: {CHUNK_SHAPE}",
-            )
+        seen = {**notation, **{entry["lean"]: entry for entry in introduced}}
+        reply = ask(
+            chat,
+            SYSTEM,
+            f"{render_header(decl, known, cited, seen)}"
+            f"<proof_so_far>\n{so_far}\n</proof_so_far>\n\n"
+            f'<tactic_record part="{index + 1}" of="{len(chunks)}">\n{record}\n</tactic_record>\n\n'
+            f"This proof is long, so you see its tactic record in {len(chunks)} parts. Give "
+            "the steps for this part in source order, then two or three sentences on where "
+            "the proof stands after it, then any notation you introduced.",
+            CHUNK_SCHEMA,
         )
         raw_steps.extend(reply["steps"])
         progress.append(reply["progress"])
+        introduced.extend(reply["notation"])
     notes = "\n".join(progress)
-    final = parse_json(
-        chat(
-            SYSTEM, f"{header}Notes on each part of the proof:\n{notes}\n\nReply as: {FINAL_SHAPE}"
-        )
+    final = ask(
+        chat,
+        SYSTEM,
+        f"{header}<proof_notes>\n{notes}\n</proof_notes>\n\n"
+        "The notes above summarise each part of this proof in order. Give the statement "
+        "and a one-paragraph summary of the idea of the whole proof.",
+        FINAL_SCHEMA,
     )
     return Explanation(
-        decl.name, decl.module, final["statement"], final["summary"], ground(decl, raw_steps)
+        decl.name,
+        decl.module,
+        final["statement"],
+        final["summary"],
+        ground(decl, raw_steps),
+        introduced,
     )
+
+
+def explain_in_order(
+    decls: list[Decl],
+    cited_for: Callable[[Decl], dict[str, dict]],
+    chat: Chat,
+    max_chars: int = 200_000,
+) -> list[Explanation]:
+    """Explain declarations in the given order, carrying statements and notation forward."""
+    known: dict[str, Explanation] = {}
+    notation: dict[str, dict] = {}
+    for decl in decls:
+        explanation = explain_decl(decl, known, cited_for(decl), chat, max_chars, notation)
+        known[decl.name] = explanation
+        for entry in explanation.notation:
+            notation.setdefault(entry["lean"], entry)
+    return [known[decl.name] for decl in decls]
 
 
 def explain_plan(plan: Plan, chat: Chat, max_chars: int = 200_000) -> list[Explanation]:
     """Explain every planned declaration, dependencies first."""
-    known: dict[str, Explanation] = {}
-    for decl in plan.order:
-        known[decl.name] = explain_decl(decl, known, plan.cited, chat, max_chars)
-    return [known[decl.name] for decl in plan.order]
+    return explain_in_order(plan.order, lambda decl: plan.cited, chat, max_chars)
 
 
 def cached_chat(chat: Chat, model: str, cache_dir: Path) -> Chat:
     """Wrap a chat function so an identical request is answered from disk."""
 
-    def call(system: str, user: str) -> str:
-        key = hashlib.sha256(json.dumps([PROMPT_VERSION, model, system, user]).encode()).hexdigest()
+    def call(system: str, user: str, schema: dict) -> str:
+        key = hashlib.sha256(json.dumps([model, system, user, schema]).encode()).hexdigest()
         path = cache_dir / f"{key}.txt"
         if path.exists():
             return path.read_text()
-        reply = chat(system, user)
+        reply = chat(system, user, schema)
         cache_dir.mkdir(parents=True, exist_ok=True)
         path.write_text(reply)
         return reply

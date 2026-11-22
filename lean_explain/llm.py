@@ -57,7 +57,8 @@ def make_config(
     return LLMConfig(base_url=base_url, model=model, api_key=api_key or None, extra_body=extra_body)
 
 
-def chat(config: LLMConfig, system: str, user: str, timeout: float = 3600.0) -> str:
+def chat(config: LLMConfig, system: str, user: str, schema: dict, timeout: float = 3600.0) -> str:
+    """Send one request and return the reply text, constrained to `schema` by the server."""
     body = {
         **config.extra_body,
         "model": config.model,
@@ -65,6 +66,10 @@ def chat(config: LLMConfig, system: str, user: str, timeout: float = 3600.0) -> 
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ],
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {"name": "reply", "strict": True, "schema": schema},
+        },
     }
     headers = {"Content-Type": "application/json"}
     if config.api_key:
