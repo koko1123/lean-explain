@@ -145,7 +145,7 @@ def build_decls(
 
 
 # Bump when Dump.lean.tmpl changes what it reports, so stale records are not reused.
-DUMP_VERSION = 2
+DUMP_VERSION = 3
 
 
 def dump_cached(project: Path, module: str, cache_dir: Path) -> list[dict]:

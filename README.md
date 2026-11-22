@@ -76,11 +76,19 @@ against, so these are reading checks, not judged results.
 |---|---|---|---|---|---|---|---|
 | `MulticolorTriangleRamsey.lean` | 126 KB | 152 | 1,480 | under 2 min | `erdos_183`, 11 lemmas | 46 s | $0.32 |
 | `CompactnessAndDegeneracy.lean` | 722 KB | 981 | 8,296 | 4 min 45 s | `not_erdos_146`, 16 lemmas | 63 s | $0.44 |
+| `GapCVP.lean` | 5.3 MB | 8,606 | 30,042 | 20 min 31 s | `finitePNormGapCVPIsNPHard`, 10 lemmas | 40 s | $0.25 |
 
 In the first file, three lemmas and the four definitions they rest on were checked line by
 line against the Lean and matched. In the second, the top-level argument was checked
 against the Lean, and one 150-tactic lemma was explained in three parts to exercise the
 long-proof path: its 17 steps cover all 159 proof lines in source order.
+
+In the third, the main theorem is a one-line term-mode application of a private transfer
+lemma. Its statement, the transfer lemma's three steps, and the five definitions they
+paraphrase (the gap factor $n^{1/(200p)}$, well-formedness, the yes and no conditions, the
+reduction structure) were checked against the Lean and matched. Two levels deep is still
+plumbing here: the hardness argument itself sits further down among 8,606 declarations
+and has not been explained.
 
 Machine-written proofs lean on case analysis. One ten-line lemma in the second file runs
 its closing tactic on 225 goals, so a tactic that ran on many goals is shown to the model

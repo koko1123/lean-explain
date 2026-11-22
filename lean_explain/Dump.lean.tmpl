@@ -51,7 +51,7 @@ run_cmd do
         [("name", toString (display c)), ("module", toString env.header.moduleNames[idx.toNat]!)]
     out := out.push <| Json.mkObj [
       ("name", toString (display name)),
-      ("kind", kindOf info),
+      ("kind", if env.isProjectionFn name then "projection" else kindOf info),
       ("type", toString typeFmt),
       ("doc", match doc with | some d => Json.str d | none => Json.null),
       ("line", ranges.range.pos.line),
