@@ -202,3 +202,14 @@ def test_venice_key_is_only_sent_to_venice(monkeypatch, tmp_path):
     assert venice.api_key == "venice-secret" and venice.extra_body == llm.VENICE_EXTRA_BODY
     local = llm.make_config("http://127.0.0.1:8080/v1", "inkling-2-mini")
     assert local.api_key is None and local.extra_body == {}
+
+
+def test_a_step_inside_a_multiline_tactic_is_grounded():
+    even = toy_decls()[0]
+    raw = [
+        {"start_line": 7, "end_line": 7, "explanation": "inside the have block"},
+        {"start_line": 4, "end_line": 4, "explanation": "the signature, no tactic there"},
+        {"start_line": 8, "end_line": 12, "explanation": "runs past the declaration"},
+    ]
+    even.steps = [s for s in even.steps if s.tactic != "trivial"]
+    assert [s.grounded for s in explain.ground(even, raw)] == [True, False, False]
