@@ -307,14 +307,19 @@ def nesting_depths(steps: list[Step]) -> list[int]:
 
 
 def chunk_steps(steps: list[Step], max_chars: int) -> list[list[Record]]:
-    """Collapse repeated runs, then split at top-level steps so each part fits a request."""
+    """Collapse repeated runs, then split between sibling steps so each part fits a request."""
     kept = collapse_repeats(steps)
     depths = nesting_depths([step for step, _ in kept])
+    # A tactic such as `classical` wraps the whole proof in one outer step, so splitting
+    # only at depth 0 would never split. Split at the shallowest depth with several steps.
+    split_depth = min((d for d in set(depths) if depths.count(d) > 1), default=0)
     chunks: list[list[Record]] = [[]]
     size = 0
     for (step, runs), depth in zip(kept, depths, strict=True):
         cost = len(render_step(step, depth, runs))
-        if depth == 0 and chunks[-1] and size + cost > max_chars:
+        # An outer wrapper stays with the first step inside it instead of forming a part.
+        has_body = any(d >= split_depth for _, d, _ in chunks[-1])
+        if depth <= split_depth and has_body and size + cost > max_chars:
             chunks.append([])
             size = 0
         chunks[-1].append((step, depth, runs))

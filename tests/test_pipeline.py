@@ -415,3 +415,20 @@ def test_a_tactic_run_on_many_cases_is_shown_twice_with_its_count():
         ("case 1", 1, 40),
     ]
     assert "ran on 40 goals of which 2 are shown" in explain.render_step(*chunk[1])
+
+
+def test_a_proof_wrapped_in_one_outer_tactic_still_splits_between_its_steps():
+    wrapped = [
+        tactic("classical\n  a\n  b\n  c", 5, 2, 8, 11),
+        tactic("a", 5, 4, 5, 5),
+        tactic("b", 6, 4, 7, 11),
+        tactic("inner", 7, 6, 7, 11),
+        tactic("c", 8, 4, 8, 5),
+    ]
+    decl = build_decls("Toy.Basic", SOURCE, DECLS[:1], wrapped)[0]
+    chunks = explain.chunk_steps(decl.steps, max_chars=1)
+    assert [[r[0].tactic.split("\n")[0] for r in chunk] for chunk in chunks] == [
+        ["classical", "a"],
+        ["b", "inner"],
+        ["c"],
+    ]
