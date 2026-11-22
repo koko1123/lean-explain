@@ -2,6 +2,7 @@
 
 import json
 import os
+import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -27,27 +28,33 @@ def load_env_file(path: Path) -> None:
         os.environ.setdefault(key.strip(), value.strip().strip("'\""))
 
 
+VENICE_BASE_URL = "https://api.venice.ai/api/v1"
+VENICE_MODEL = "deepseek-v4-pro"
+# Venice adds its own system prompt unless told not to.
+VENICE_EXTRA_BODY = {"venice_parameters": {"include_venice_system_prompt": False}}
+
+
 def make_config(
     base_url: str | None = None, model: str | None = None, extra_body: dict | None = None
 ) -> LLMConfig:
-    """Build the config from explicit values, falling back to the environment and .env.local.
+    """Build the config from explicit values, then the environment and .env.local, then Venice.
 
-    The API key is optional because local servers do not need one.
+    VENICE_API_KEY is only ever sent to Venice. Other endpoints use LEAN_EXPLAIN_API_KEY,
+    which is optional because local servers do not need one.
     """
     load_env_file(Path(".env.local"))
-    base_url = base_url or os.environ.get("LEAN_EXPLAIN_BASE_URL")
-    model = model or os.environ.get("LEAN_EXPLAIN_MODEL")
-    if not base_url or not model:
-        raise SystemExit(
-            "Set the endpoint and model with --base-url and --model, or with "
-            "LEAN_EXPLAIN_BASE_URL and LEAN_EXPLAIN_MODEL (see .env.example)"
-        )
-    return LLMConfig(
-        base_url=base_url.rstrip("/"),
-        model=model,
-        api_key=os.environ.get("LEAN_EXPLAIN_API_KEY") or None,
-        extra_body=extra_body or json.loads(os.environ.get("LEAN_EXPLAIN_EXTRA_BODY") or "{}"),
-    )
+    base_url = (base_url or os.environ.get("LEAN_EXPLAIN_BASE_URL") or VENICE_BASE_URL).rstrip("/")
+    is_venice = base_url == VENICE_BASE_URL
+    model = model or os.environ.get("LEAN_EXPLAIN_MODEL") or (VENICE_MODEL if is_venice else None)
+    if not model:
+        raise SystemExit("Set the model with --model or LEAN_EXPLAIN_MODEL (see .env.example)")
+    api_key = os.environ.get("LEAN_EXPLAIN_API_KEY")
+    if not api_key and is_venice:
+        api_key = os.environ.get("VENICE_API_KEY")
+    if extra_body is None:
+        from_env = os.environ.get("LEAN_EXPLAIN_EXTRA_BODY")
+        extra_body = json.loads(from_env) if from_env else (VENICE_EXTRA_BODY if is_venice else {})
+    return LLMConfig(base_url=base_url, model=model, api_key=api_key or None, extra_body=extra_body)
 
 
 def chat(config: LLMConfig, system: str, user: str, timeout: float = 3600.0) -> str:
@@ -65,6 +72,10 @@ def chat(config: LLMConfig, system: str, user: str, timeout: float = 3600.0) -> 
     request = urllib.request.Request(
         f"{config.base_url}/chat/completions", data=json.dumps(body).encode(), headers=headers
     )
-    with urllib.request.urlopen(request, timeout=timeout) as response:
-        payload = json.load(response)
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            payload = json.load(response)
+    except urllib.error.HTTPError as error:
+        detail = error.read().decode(errors="replace")[:500]
+        raise SystemExit(f"{config.base_url} returned HTTP {error.code}: {detail}") from error
     return payload["choices"][0]["message"]["content"]

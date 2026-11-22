@@ -1,6 +1,6 @@
 import json
 
-from lean_explain import assemble, explain
+from lean_explain import assemble, explain, llm
 from lean_explain.extract import assign_steps, build_decls
 
 SOURCE = """import Mathlib.Tactic
@@ -185,3 +185,20 @@ def test_markdown_sidecar_and_pairs():
     rows = [json.loads(r) for r in assemble.pairs_jsonl(plan, explanations).splitlines()]
     assert [r["name"] for r in rows] == ["toy_even", "toy_use"]
     assert rows[0]["lean"].startswith("/-- The sum")
+
+
+def test_venice_key_is_only_sent_to_venice(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    for name in (
+        "LEAN_EXPLAIN_BASE_URL",
+        "LEAN_EXPLAIN_MODEL",
+        "LEAN_EXPLAIN_API_KEY",
+        "LEAN_EXPLAIN_EXTRA_BODY",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("VENICE_API_KEY", "venice-secret")
+    venice = llm.make_config()
+    assert venice.base_url == llm.VENICE_BASE_URL and venice.model == llm.VENICE_MODEL
+    assert venice.api_key == "venice-secret" and venice.extra_body == llm.VENICE_EXTRA_BODY
+    local = llm.make_config("http://127.0.0.1:8080/v1", "inkling-2-mini")
+    assert local.api_key is None and local.extra_body == {}

@@ -28,7 +28,7 @@ uv run lean-explain extract --project workspace/pfr \
   --repl workspace/repl-v4.36.0-rc2/.lake/build/bin/repl --module PFR.HundredPercent
 
 # Explain a theorem and the project lemmas it uses directly.
-cp .env.example .env.local   # defaults to Venice; set LEAN_EXPLAIN_API_KEY
+cp .env.example .env.local   # defaults to Venice; set VENICE_API_KEY
 uv run lean-explain explain --project workspace/pfr \
   --repl workspace/repl-v4.36.0-rc2/.lake/build/bin/repl \
   --module PFR.HundredPercent --decl exists_isUniform_of_rdist_eq_zero --depth 1

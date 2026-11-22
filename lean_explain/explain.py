@@ -9,7 +9,7 @@ from pathlib import Path
 
 from lean_explain.extract import Decl, Step
 
-PROMPT_VERSION = "1"
+PROMPT_VERSION = "2"
 
 SYSTEM = """\
 You explain Lean 4 proofs to a mathematically literate reader who does not read Lean.
@@ -20,8 +20,12 @@ Describe what this proof does, in the order it does it. Do not describe how you 
 prove the result, and do not add steps that are not in the record. Use the goal states to
 say what each step achieves mathematically. Group routine bookkeeping (introductions,
 rewrites that only reshape a goal, measurability side conditions) into a single step.
-Write mathematics in LaTeX between dollar signs. Refer to results from the same project
-by the English statements you are given for them.
+Write for a mathematician: call every object by its mathematical name, not its Lean
+identifier (the Ruzsa distance, not rdist; antisymmetry of the order, not le_antisymm).
+Name a Lean lemma only when citing it, in backticks, never inside mathematics. Write
+mathematics in standard notation as LaTeX between dollar signs, translating Lean notation
+rather than copying it, so that no unescaped LaTeX special character such as # appears.
+Refer to results from the same project by the English statements you are given for them.
 
 Every step must cite the source lines it covers, and those lines must lie inside the
 declaration's own source range. Steps appear in source order and together cover the proof.
