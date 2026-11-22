@@ -160,8 +160,10 @@ windows.
 
 ## Help wanted
 
-The design and evaluation plan are in [docs/design.md](docs/design.md). Open problems,
-roughly in order of value:
+[CONTRIBUTING.md](CONTRIBUTING.md) says how to help, including two ways that need no
+code: labelling the judge's verdicts in [`results/`](results/), and running an evaluation
+with your own key or a local model. The design and evaluation plan are in
+[docs/design.md](docs/design.md). Open problems, roughly in order of value:
 
 - **Judge calibration.** Hand-label 20 to 50 explanations and measure how often the judge
   agrees, before any score here is trusted.

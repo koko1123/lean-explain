@@ -1,0 +1,1355 @@
+{
+  "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+  "generator": "deepseek-v4-1-flash-1017-ultrafast",
+  "judge": "gemini-4-carbon",
+  "prompt_version": "5",
+  "judge_version": "2",
+  "unjudged": 1,
+  "stopped": "Spending cap reached: $2.04 of $2.00. Finished requests are cached, so a rerun with a higher --budget resumes.",
+  "summary": {
+    "results": 15,
+    "statement_equivalent": 14,
+    "mean_step_coverage": 0.9428571428571428,
+    "results_with_errors": 3,
+    "grounding": 1.0
+  },
+  "results": [
+    {
+      "name": "ProbabilityTheory.IdentDistrib.rdist_congr",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "In the blueprint, a 'copy' of a random variable means an identically distributed random variable (potentially defined on a different space). The candidate makes the underlying measurable spaces, measures, and ambient additive commutative group explicit. Allowing arbitrary measures rather than restricting to probability measures is a standard formalization convention without mathematical content. Thus, both statements make the exact same mathematical claim: Ruzsa distance is invariant under replacing each random variable by an identically distributed one.",
+      "reference_steps": [
+        {
+          "step": "Unfold the definition of Ruzsa distance and apply the invariance of entropy under taking identically distributed copies (`copy-ent`).",
+          "evidence": "Unfold the definition of the Ruzsa distance, which is the entropy of the difference map on the product of the pushforward measures minus half the entropy of each variable. The hypotheses identify the pushforwards, $(\\mu.map X) = (\\mu''.map X')$ and $(\\mu'.map Y) = (\\mu'''.map Y')$ via `ProbabilityTheory.IdentDistrib.map_eq`, so the joint entropy terms become equal; and `ProbabilityTheory.IdentDistrib.entropy_congr` gives $H[X;\\mu]=H[X';\\mu'']$ and $H[Y;\\mu']=H[Y';\\mu''']$.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "ProbabilityTheory.IdentDistrib.rdist_congr",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $\\Omega,\\Omega',\\Omega'',\\Omega'''$ be measurable spaces with measures $\\mu,\\mu',\\mu'',\\mu'''$, and let $G$ be an additive commutative group equipped with a measurable space structure. If the $G$-valued random variables $X$ and $X'$ are identically distributed under $\\mu$ and $\\mu''$, and $Y$ and $Y'$ are identically distributed under $\\mu'$ and $\\mu'''$, then the Ruzsa distances agree: $d[X;\\mu \\# Y;\\mu'] = d[X';\\mu'' \\# Y';\\mu''']$.",
+          "summary": "The Ruzsa distance is built from two ingredients: the entropy of the difference on the product of the two pushforward laws, and the individual entropies. Identical distribution preserves both the pushforward measures and the entropies, so replacing $(X,\\mu)$ by $(X',\\mu'')$ and $(Y,\\mu')$ by $(Y',\\mu''')$ leaves the Ruzsa distance unchanged.",
+          "steps": [
+            {
+              "start_line": 138,
+              "end_line": 138,
+              "explanation": "Unfold the definition of the Ruzsa distance, which is the entropy of the difference map on the product of the pushforward measures minus half the entropy of each variable. The hypotheses identify the pushforwards, $(\\mu.map X) = (\\mu''.map X')$ and $(\\mu'.map Y) = (\\mu'''.map Y')$ via `ProbabilityTheory.IdentDistrib.map_eq`, so the joint entropy terms become equal; and `ProbabilityTheory.IdentDistrib.entropy_congr` gives $H[X;\\mu]=H[X';\\mu'']$ and $H[Y;\\mu']=H[Y';\\mu''']$. After these rewrites both sides are literally the same expression.",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "d[X ; μ # Y ; μ']",
+              "latex": "d[X;\\mu \\# Y;\\mu']",
+              "meaning": "Ruzsa distance between the laws of X and Y"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ProbabilityTheory.IndepFun.rdist_eq",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The reference statement asserts that for independent $G$-valued random variables $X$ and $Y$, the Ruzsa distance $d[X;Y]$ equals $\\mathbb{H}[X - Y] - \\mathbb{H}[X]/2 - \\mathbb{H}[Y]/2$ (with $:=$ in the blueprint being a harmless notation slip for $=$). The candidate states the exact same identity, adding only standard formalization hypotheses and notation: a finite ambient measure space $(\\Omega, \\mu)$, a countable abelian group $G$ with measurable singletons, measurability of $X$ and $Y$, and explicit measure arguments in $d$ and $H$. Accounting for these formalization conventions, the two statements make the same mathematical claim.",
+      "reference_steps": [
+        {
+          "step": "Unfold the definition of Ruzsa distance and use the independence of $X$ and $Y$ together with the distribution-invariance/relabeling properties of entropy to identify the entropy of the difference of independent copies with $\\mathbb{H}[X - Y]$ (and marginal entropies with $\\mathbb{H}[X], \\mathbb{H}[Y]$).",
+          "evidence": "Step 1 unfolds `rdist_def` to reduce the claim to $H[(x,y)\\mapsto x-y; (\\mu\\text{-law of }X)\\times(\\mu\\text{-law of }Y)] = H[X-Y;\\mu]$; Step 2 uses independence (`indepFun_iff_map_prod_eq_prod_map_map`) to equate the product of the marginal laws with the joint law of $(X,Y)$; Step 3 unfolds `entropy_def` and applies `map_map` to identify the resulting measure entropy with $H[X-Y;\\mu]$.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "ProbabilityTheory.IndepFun.rdist_eq",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $(\\Omega, \\mu)$ be a finite measure space, $G$ a countable abelian group whose points are measurable (with the discrete $\\sigma$-algebra, say), and let $X, Y : \\Omega \\to G$ be measurable and independent random variables. Then the Ruzsa distance of their laws satisfies $d[X;\\mu \\# Y;\\mu] = H[X - Y;\\mu] - H[X;\\mu]/2 - H[Y;\\mu]/2$, where $X - Y$ is the pointwise difference.",
+          "summary": "The proof is a direct computation from the definition of the Ruzsa distance: it suffices to identify the entropy of the difference taken on the product of the two marginal laws with the entropy of the actual difference $X - Y$. Independence supplies exactly that identification, because it says the product of the marginal laws is the law of the pair $(X,Y)$, and pushing a measure forward along a composition (the pair map followed by subtraction) gives the law of $X-Y$. The two half-entropy subtractions in the definition are untouched throughout, and the final identification is definitional.",
+          "steps": [
+            {
+              "start_line": 180,
+              "end_line": 181,
+              "explanation": "Unfold the definition of the Ruzsa distance (`rdist_def`), which expresses $d[X;\\mu \\# Y;\\mu']$ as $H[(x,y)\\mapsto x-y;(\\mu\\text{-law of }X)\\times(\\mu'\\text{-law of }Y)] - H[X;\\mu]/2 - H[Y;\\mu']/2$, i.e. the entropy of the difference computed on the product of the two pushforward measures. The two subtracted half-entropy terms already coincide with those in the claim, so congruence reduces the goal to the single identity $H[(x,y)\\mapsto x-y;(\\mu\\text{-law of }X)\\times(\\mu\\text{-law of }Y)] = H[X-Y;\\mu]$.",
+              "grounded": true
+            },
+            {
+              "start_line": 182,
+              "end_line": 183,
+              "explanation": "Record the consequence of independence used here: the product of the pushforward measures $(\\mu\\text{-law of }X)\\times(\\mu\\text{-law of }Y)$ equals the law of the pair map $\\omega \\mapsto (X\\omega, Y\\omega)$. This is the direction of `indepFun_iff_map_prod_eq_prod_map_map` applied to the independence hypothesis (in the reverse orientation), using only almost-everywhere measurability of $X$ and $Y$.",
+              "grounded": true
+            },
+            {
+              "start_line": 184,
+              "end_line": 185,
+              "explanation": "Rewrite the product measure by that identity, then unfold the entropy of a random variable (`entropy_def`: $H[Z;\\mu] = H_m[\\mu\\text{-law of }Z]$, the entropy of the pushforward measure) on both sides and use the composition rule for pushforwards, `map_map`, to move the law of the pair through $(x,y)\\mapsto x-y$; the measurability side conditions for $x_1 - x_2$ and for $(X,Y)$ are discharged automatically. What remains is $H_m[\\mu\\text{-law of }((x,y)\\mapsto x-y)\\circ \\omega\\mapsto(X\\omega,Y\\omega)] = H[X-Y;\\mu]$, which holds by definition since that composite is $\\omega \\mapsto X\\omega - Y\\omega$.",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "d[X ; μ # Y ; μ']",
+              "latex": "d[X;\\mu \\# Y;\\mu']",
+              "meaning": "Ruzsa distance between the laws of X and Y"
+            },
+            {
+              "lean": "H[X ; μ]",
+              "latex": "H[X;\\mu]",
+              "meaning": "Shannon entropy of the law of the random variable X under μ"
+            },
+            {
+              "lean": "Hm[μ]",
+              "latex": "H_m[\\mu]",
+              "meaning": "entropy of the measure μ (measureEntropy)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "rdist_zero_eq_half_ent",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The candidate states that the Ruzsa distance between a $G$-valued map $X$ (under a finite measure $\\mu$) and the constant zero map (under a probability measure $\\mu'$) equals half the entropy of $X$. The extra assumptions on $G$ (countable abelian group with measurable singletons), the generalization of $\\mu$ from a probability measure to a finite measure, the explicit separation of sample spaces $\\Omega, \\Omega'$, and the omission of measurability on $X$ (due to Lean's convention for pushforward measures of non-measurable maps) are standard formalization conventions with no change in mathematical content. Thus the statements are equivalent.",
+      "reference_steps": [
+        {
+          "step": "Unfold the definition of Ruzsa distance and simplify using that $X - 0$ has the same distribution as $X$ and $\\mathbb{H}(0) = 0$.",
+          "evidence": "Step 1 shows that the pushforward of $(\\mu.\\mathrm{map}\\ X)\\otimes\\delta_0$ under subtraction equals $\\mu.\\mathrm{map}\\ X$ (via $x \\mapsto x - 0$), giving $H[(x,y)\\mapsto x-y;(\\mu.\\mathrm{map}\\ X)\\otimes\\delta_0]=H[X;\\mu]$. Step 2 unfolds the definition of Ruzsa distance, uses that the entropy of a constant variable is zero, and simplifies $H[X;\\mu] - H[X;\\mu]/2 = H[X;\\mu]/2$.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "rdist_zero_eq_half_ent",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $\\Omega$ and $\\Omega'$ be measurable spaces, let $G$ be a countable measurable abelian group whose singletons are measurable, let $\\mu$ be a finite measure on $\\Omega$ and $\\mu'$ a probability measure on $\\Omega'$, and let $X:\\Omega\\to G$. Then the Ruzsa distance between the law of $X$ under $\\mu$ and the law of the constant zero map on $\\Omega'$ under $\\mu'$ satisfies $d[X;\\mu\\#0;\\mu']=H[X;\\mu]/2$.}",
+          "summary": "The proof is a direct computation from the definition of Ruzsa distance. Subtracting an independent zero from $X$ does not change the law, so the joint entropy term is just $H[X;\\mu]$; the entropy of the constant zero term is $0$, and the remaining arithmetic gives $H[X;\\mu]/2$.",
+          "steps": [
+            {
+              "start_line": 228,
+              "end_line": 233,
+              "explanation": "The auxiliary identity is $H[(x,y)\\mapsto x-y;(\\mu.map X)\\otimes\\delta_0]=H[X;\\mu]$. To prove it, the proof shows that the pushforward of $(\\mu.map X)\\otimes\\delta_0$ under subtraction is $\\mu.map X$: rewriting with `Measure.prod_dirac` and the composition rule for pushforwards `Measure.map_map` reduces this to the pushforward of $\\mu.map X$ under $x\\mapsto x-0$, the identity map; the two measurability side conditions are discharged by `fun_prop`, and the final simplification is by `simp`. Since entropy is by definition the entropy of the pushforward law (`entropy_def`), this equality of pushforwards gives the auxiliary identity.",
+              "grounded": true
+            },
+            {
+              "start_line": 234,
+              "end_line": 235,
+              "explanation": "Unfolding the definition of Ruzsa distance (`rdist_def`), the law of the constant zero variable is the Dirac mass at $0$, and the entropy of a constant variable is zero (`entropy_const`). Applying the auxiliary identity leaves the scalar goal $H[X;\\mu]-H[X;\\mu]/2=H[X;\\mu]/2$, which is closed by `ring`.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        }
+      ]
+    },
+    {
+      "name": "rdist_symm",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The reference claims that the Ruzsa distance is symmetric, d[X;Y] = d[Y;X], for G-valued random variables X and Y. The candidate states the exact same symmetry d[X;μ # Y;μ'] = d[Y;μ' # X;μ], making explicit the standard formalization conventions (finite measures μ and μ' on their respective spaces, G being a countable abelian group with measurable singletons, and omitting measurability of X and Y since Lean's pushforward measure handles non-measurable maps by default). Accounting for these conventions, the mathematical claim is identical.",
+      "reference_steps": [
+        {
+          "step": "Unfold the definition of Ruzsa distance and apply the negation-invariance of entropy to deduce d[X;Y] = d[Y;X].",
+          "evidence": "Step 1 expands both sides by the definition of the Ruzsa distance (`rdist_def`) and cancels the common half-entropy terms; Step 2 applies negation-invariance of entropy (`entropy_neg`), and Steps 3-5 rewrite -(a - b) = b - a via the coordinate swap on the product measure to match the right-hand side.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "rdist_symm",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $\\mu$ be a finite measure on a measurable space $\\Omega$ and $\\mu'$ a finite measure on a measurable space $\\Omega'$, let $G$ be a countable abelian group carrying a measurable space structure in which singletons are measurable, and let $X:\\Omega\\to G$ and $Y:\\Omega'\\to G$ be arbitrary maps. Then the Ruzsa distance is symmetric in its two arguments: $d[X;\\mu\\#Y;\\mu'] = d[Y;\\mu'\\#X;\\mu]$.",
+          "summary": "Expand both Ruzsa distances and discard the common correction term $-H[X;\\mu]/2-H[Y;\\mu']/2$, leaving only the equality of $H[x_1-x_2;(X_*\\mu)\\times(Y_*\\mu')]$ and $H[x_1-x_2;(Y_*\\mu')\\times(X_*\\mu)]$. Negation-invariance of entropy replaces the left integrand by its negative, and the pointwise identity $-(a-b)=b-a$ exhibits this as the difference map precomposed with the coordinate swap. Pushing the swap through the product measure by the composition rule for pushforwards and exchanging the factors turns the left side into the entropy of the difference map under $(Y_*\\mu')\\times(X_*\\mu)$, which is literally the right side.",
+          "steps": [
+            {
+              "start_line": 240,
+              "end_line": 241,
+              "explanation": "Expand both sides by the definition of the Ruzsa distance (`rdist_def`), which writes $d[X;\\mu\\#Y;\\mu']$ as $H[x\\mapsto x_1-x_2;(X_*\\mu)\\times(Y_*\\mu')] - H[X;\\mu]/2 - H[Y;\\mu']/2$, and the analogous formula with the roles of $X,\\mu$ and $Y,\\mu'$ exchanged. Rewriting with `sub_sub` twice and `add_comm` puts the two half-entropy corrections on both sides into the identical form $-(H[Y;\\mu']/2+H[X;\\mu]/2)$, and `congr 1` cancels that common trailing term. What remains is the equality of the two entropy terms, $H[x\\mapsto x_1-x_2;(X_*\\mu)\\times(Y_*\\mu')] = H[x\\mapsto x_1-x_2;(Y_*\\mu')\\times(X_*\\mu)]$.",
+              "grounded": true
+            },
+            {
+              "start_line": 242,
+              "end_line": 242,
+              "explanation": "Apply the negation-invariance of entropy, `entropy_neg` (for measurable $Z$ one has $H[-Z;\\nu] = H[Z;\\nu]$), in the reverse direction, but only to the left-hand entropy, replacing the difference function $x\\mapsto x_1-x_2$ by its pointwise negative $-\\,(x\\mapsto x_1-x_2)$. The measurability hypothesis of `entropy_neg` is discharged by `fun_prop`.",
+              "grounded": true
+            },
+            {
+              "start_line": 243,
+              "end_line": 243,
+              "explanation": "Record the pointwise identity $-(a-b) = b-a$ in function form: the negated difference function equals the difference function composed with the swap of the two coordinates. The proof is `ext` followed by `simp`.",
+              "grounded": true
+            },
+            {
+              "start_line": 244,
+              "end_line": 244,
+              "explanation": "Rewrite the left-hand entropy using that identity and unfold $H[Z;\\nu] = H_m[Z_*\\nu]$ via `entropy_def`, turning the left side into the measure entropy of the pushforward of $(X_*\\mu)\\times(Y_*\\mu')$ along $(x\\mapsto x_1-x_2)\\circ \\mathrm{swap}$. Then `map_map` (used backwards, with measurability of the difference map supplied by `fun_prop`) converts this into the pushforward of $\\mathrm{swap}_*\\big((X_*\\mu)\\times(Y_*\\mu')\\big)$ along $x\\mapsto x_1-x_2$, and `prod_swap` identifies that swapped product measure with $(Y_*\\mu')\\times(X_*\\mu)$.",
+              "grounded": true
+            },
+            {
+              "start_line": 245,
+              "end_line": 245,
+              "explanation": "The goal now reads $H_m[\\,(x\\mapsto x_1-x_2)_*((Y_*\\mu')\\times(X_*\\mu))\\,] = H[x\\mapsto x_1-x_2;(Y_*\\mu')\\times(X_*\\mu)]$, whose two sides are the same by definition of $H[\\cdot;\\cdot]$ as the measure entropy of the pushforward, so `rfl` closes it.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        }
+      ]
+    },
+    {
+      "name": "diff_ent_le_rdist",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The reference states $|H[X] - H[Y]| \\le 2 d[X; Y]$ for $G$-valued random variables $X, Y$. The candidate states the exact same inequality while making explicit the standard formalization hypotheses left implicit in the blueprint (explicit probability spaces $(\\Omega, \\mu)$ and $(\\Omega', \\mu')$, $G$ being a countable additive abelian group with measurable singletons, and $X, Y$ being measurable with finite range). Accounting for these conventions, the two statements make the exact same mathematical claim.",
+      "reference_steps": [
+        {
+          "step": "Combine the definition of Ruzsa distance (via independent copies $X', Y'$), the lower bound for the entropy of a sum/difference of independent random variables, and the invariance of entropy under negation to deduce $|H[X] - H[Y]| \\le 2 d[X; Y]$.",
+          "evidence": "Steps 1–5 pass to independent copies $X', Y'$ on a common space (`independent_copies_finiteRange`), expand the Ruzsa distance as $H[X'-Y';\\nu] - H[X';\\nu]/2 - H[Y';\\nu]/2$ (`IndepFun.rdist_eq`), apply `max_entropy_le_entropy_sub` (which encapsulates both the sumset entropy lower bound and negation invariance as $\\max(H[X';\\nu], H[Y';\\nu]) \\le H[X'-Y';\\nu]$), and conclude by linear arithmetic.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "diff_ent_le_rdist",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $\\Omega$ and $\\Omega'$ be measurable spaces with probability measures $\\mu$ and $\\mu'$, let $G$ be a countable additive abelian group with a measurable space structure whose singletons are measurable, and let $X:\\Omega\\to G$ and $Y:\\Omega'\\to G$ be measurable random variables with finite range. Then $|H[X;\\mu]-H[Y;\\mu']|\\le 2\\,d[X;\\mu \\# Y;\\mu']$.",
+          "summary": "The proof replaces the two variables by independent copies on a common probability space, preserving their laws. On that space the Ruzsa distance is rewritten as the entropy of the difference minus half the two individual entropies. The desired absolute-value inequality then reduces to showing that each of $H[X';\\nu]$ and $H[Y';\\nu]$ is at most $H[X'-Y';\\nu]$, which is exactly the max-entropy bound for independent variables; linear arithmetic finishes the two sides.",
+          "steps": [
+            {
+              "start_line": 264,
+              "end_line": 265,
+              "explanation": "Apply `independent_copies_finiteRange` to the measurable finite-range variables $X$ and $Y$. This produces a probability measure $\\nu$ on $G\\times G$ and measurable finite-range variables $X',Y':G\\times G\\to G$ that are independent under $\\nu$, with $X'$ identically distributed to $X$ under $\\mu$ and $Y'$ identically distributed to $Y$ under $\\mu'$.",
+              "grounded": true
+            },
+            {
+              "start_line": 266,
+              "end_line": 267,
+              "explanation": "Rewrite the goal along these identifications. First `IdentDistrib.rdist_congr` replaces $d[X;\\mu \\# Y;\\mu']$ by $d[X';\\nu \\# Y';\\nu]$, then `ProbabilityTheory.IndepFun.rdist_eq`, applied to the independent $X',Y'$, replaces this by $C-A/2-B/2$, where $A=H[X';\\nu]$, $B=H[Y';\\nu]$, and $C=H[X'-Y';\\nu]$. Next `IdentDistrib.entropy_congr` replaces $H[X;\\mu]$ and $H[Y;\\mu']$ by $A$ and $B$. Finally `abs_le` converts the absolute-value inequality into the pair of inequalities $-(2(C-A/2-B/2))\\le A-B$ and $A-B\\le 2(C-A/2-B/2)$.",
+              "grounded": true
+            },
+            {
+              "start_line": 268,
+              "end_line": 268,
+              "explanation": "Apply `max_entropy_le_entropy_sub` to the independent measurable $X',Y'$, obtaining $\\max(A,B)\\le C$, that is, $\\max(H[X';\\nu],H[Y';\\nu])\\le H[X'-Y';\\nu]$.",
+              "grounded": true
+            },
+            {
+              "start_line": 269,
+              "end_line": 270,
+              "explanation": "Split the conjunction and prove the first inequality. After rearranging, it says $B\\le C$, which follows from $B\\le\\max(A,B)$ and $\\max(A,B)\\le C$; these are exactly the facts supplied to `linarith`, namely `le_max_right` and the max-entropy bound.",
+              "grounded": true
+            },
+            {
+              "start_line": 271,
+              "end_line": 271,
+              "explanation": "The second inequality is equivalent to $A\\le C$. This follows from $A\\le\\max(A,B)$ and $\\max(A,B)\\le C$, so `linarith` with `le_max_left` and the max-entropy bound closes the remaining goal.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        }
+      ]
+    },
+    {
+      "name": "diff_ent_le_rdist' + diff_ent_le_rdist''",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The reference states two upper bounds, H[X-Y] - H[X] <= 2 d[X;Y] and H[X-Y] - H[Y] <= 2 d[X;Y], for independent G-valued random variables X and Y. The candidate splits these two bounds across two declarations (`diff_ent_le_rdist'` and `diff_ent_le_rdist''`), adding only standard formalization hypotheses (probability space, countable abelian group with measurable singletons, measurability, and finite range). Together, the two parts make the exact same mathematical claim as the reference.",
+      "reference_steps": [
+        {
+          "step": "Combine the definition/formula for the Ruzsa distance of independent variables (d[X;Y] = H[X-Y] - H[X]/2 - H[Y]/2) with the lower bound H[X-Y] >= max(H[X], H[Y]) obtained from the sumset entropy lower bound and negation invariance of entropy.",
+          "evidence": "In both `diff_ent_le_rdist'` and `diff_ent_le_rdist''`, Step 1 expands d[X;mu # Y;mu] = H[X-Y;mu] - H[X;mu]/2 - H[Y;mu]/2 via `IndepFun.rdist_eq`, and Step 2 applies `max_entropy_le_entropy_sub` (which packages the sumset lower bound and negation invariance directly as max(H[X;mu], H[Y;mu]) <= H[X-Y;mu]) to finish by linear arithmetic.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [
+        "In `diff_ent_le_rdist'` (Step 2), the candidate claims that linear arithmetic deduces both H[X;mu] <= H[X-Y;mu] and H[Y;mu] <= H[X-Y;mu] from the two inequalities max(H[X;mu], H[Y;mu]) <= H[X-Y;mu] and H[X;mu] <= max(H[X;mu], H[Y;mu]). Linear arithmetic treats max(H[X;mu], H[Y;mu]) as an atom and cannot deduce the actually needed bound H[Y;mu] <= H[X-Y;mu] from those two facts; the required trivial bound is H[Y;mu] <= max(H[X;mu], H[Y;mu]) rather than H[X;mu] <= max(H[X;mu], H[Y;mu])."
+      ],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "diff_ent_le_rdist'",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $(\\Omega, \\mu)$ be a probability space, $G$ a countable abelian group whose points are measurable, and $X, Y : \\Omega \\to G$ measurable, finite-range and independent random variables. Then the entropies satisfy $H[X - Y;\\mu] - H[X;\\mu] \\le 2\\, d[X;\\mu \\# Y;\\mu]$, where $X - Y$ is the pointwise difference and $d$ is the Ruzsa distance between the laws of $X$ and $Y$.",
+          "summary": "Rewrite the Ruzsa distance in terms of entropies of $X$, $Y$ and $X - Y$ using the identity valid for independent variables, then verify the resulting numerical inequality: since the difference $X - Y$ has entropy at least that of $X$ and at least that of $Y$, doubling $H[X - Y] - H[X]/2 - H[Y]/2$ dominates $H[X - Y] - H[X]$. Linear arithmetic combines the expansion with these entropy bounds.",
+          "steps": [
+            {
+              "start_line": 277,
+              "end_line": 277,
+              "explanation": "Expand the Ruzsa distance by the identity `ProbabilityTheory.IndepFun.rdist_eq`, which for independent measurable $X$ and $Y$ states $d[X;\\mu \\# Y;\\mu] = H[X - Y;\\mu] - H[X;\\mu]/2 - H[Y;\\mu]/2$. The goal becomes $H[X - Y;\\mu] - H[X;\\mu] \\le 2\\,(H[X - Y;\\mu] - H[X;\\mu]/2 - H[Y;\\mu]/2)$.",
+              "grounded": true
+            },
+            {
+              "start_line": 278,
+              "end_line": 278,
+              "explanation": "Close the inequality by linear arithmetic, using two facts: the maximum-entropy bound `ProbabilityTheory.max_entropy_le_entropy_sub`, which for independent measurable finite-range $X$ and $Y$ gives $\\max(H[X;\\mu], H[Y;\\mu]) \\le H[X - Y;\\mu]$, and the trivial bound $H[X;\\mu] \\le \\max(H[X;\\mu], H[Y;\\mu])$. Together these give $H[X;\\mu] \\le H[X - Y;\\mu]$ and $H[Y;\\mu] \\le H[X - Y;\\mu]$, and hence $2\\,(H[X - Y;\\mu] - H[X;\\mu]/2 - H[Y;\\mu]/2) \\ge H[X - Y;\\mu] - H[X;\\mu]$.",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "d[X ; μ # Y ; μ]",
+              "latex": "d[X;\\mu \\# Y;\\mu]",
+              "meaning": "Ruzsa distance between the laws of X and Y"
+            },
+            {
+              "lean": "H[X ; μ]",
+              "latex": "H[X;\\mu]",
+              "meaning": "Shannon entropy of the law of X under μ"
+            }
+          ]
+        },
+        {
+          "name": "diff_ent_le_rdist''",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $(\\Omega,\\mu)$ be a probability space, let $G$ be a countable abelian group whose points are measurable, and let $X,Y:\\Omega\\to G$ be measurable independent random variables with finite range. Then the entropies satisfy\n\\[\nH[X-Y;\\mu]-H[Y;\\mu]\\le 2\\,d[X;\\mu\\#Y;\\mu],\n\\]\nwhere $d$ is the Ruzsa distance between the laws of $X$ and $Y$.",
+          "summary": "Substitute the identity expressing the Ruzsa distance in terms of entropies of $X$, $Y$, and $X-Y$. The resulting inequality is algebraically equivalent to $H[X;\\mu]\\le H[X-Y;\\mu]$, which follows from the fact that the maximum of the entropies of $X$ and $Y$ is at most the entropy of their difference.",
+          "steps": [
+            {
+              "start_line": 284,
+              "end_line": 284,
+              "explanation": "Rewrite the Ruzsa distance using the independence identity `ProbabilityTheory.IndepFun.rdist_eq`: for independent measurable $X$ and $Y$ with finite range,\n\\[\nd[X;\\mu\\#Y;\\mu]=H[X-Y;\\mu]-\\frac{H[X;\\mu]}2-\\frac{H[Y;\\mu]}2.\n\\]\nAfter this substitution the goal becomes\n\\[\nH[X-Y;\\mu]-H[Y;\\mu]\\le 2\\left(H[X-Y;\\mu]-\\frac{H[X;\\mu]}2-\\frac{H[Y;\\mu]}2\\right).\n\\]",
+              "grounded": true
+            },
+            {
+              "start_line": 285,
+              "end_line": 285,
+              "explanation": "Use the max-entropy estimate `ProbabilityTheory.max_entropy_le_entropy_sub`: since $X$ and $Y$ are independent, measurable, and have finite range,\n\\[\n\\max(H[X;\\mu],H[Y;\\mu])\\le H[X-Y;\\mu].\n\\]\nTogether with $H[X;\\mu]\\le\\max(H[X;\\mu],H[Y;\\mu])$, this gives $H[X;\\mu]\\le H[X-Y;\\mu]$. The rewritten inequality is equivalent to exactly this bound by linear arithmetic, so `linarith` closes the goal.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        }
+      ]
+    },
+    {
+      "name": "rdist_nonneg",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The reference states that the Ruzsa distance between two G-valued random variables X and Y is nonnegative: d[X;Y] >= 0. The candidate proves the exact same nonnegativity claim, 0 <= d[X; \\mu # Y; \\mu'], while making explicit the standard technical formalization hypotheses (measurable spaces with probability measures, G being a countable abelian group with measurable singletons, and X, Y being measurable with finite range). Accounting for these formalization conventions, the two statements are equivalent.",
+      "reference_steps": [
+        {
+          "step": "Deduce d[X;Y] >= 0 immediately from the bound relating entropy difference and Ruzsa distance (\\Cref{ruzsa-diff}).",
+          "evidence": "Invoke the entropic bound `diff_ent_le_rdist`, which for these measurable finite-range $X,Y$ states $|H[X;\\mu]-H[Y;\\mu']|\\le 2\\,d[X;\\mu\\#Y;\\mu']$, and combine it with the trivial bound $0\\le|H[X;\\mu]-H[Y;\\mu']|$. Transitivity of $\\ge$ turns the two into $0\\le 2\\,d[X;\\mu\\#Y;\\mu']$, and linear arithmetic then yields the goal $0\\le d[X;\\mu\\#Y;\\mu']$.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "rdist_nonneg",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $\\Omega$ and $\\Omega'$ be measurable spaces carrying probability measures $\\mu$ and $\\mu'$, let $G$ be a countable abelian group equipped with a measurable space structure in which singletons are measurable, and let $X:\\Omega\\to G$ and $Y:\\Omega'\\to G$ be measurable maps with finite range. Then the Ruzsa distance is nonnegative: $0\\le d[X;\\mu\\#Y;\\mu']$.",
+          "summary": "The Ruzsa distance controls the discrepancy of the two entropies from above, and that discrepancy is itself nonnegative; hence twice the Ruzsa distance is nonnegative, so the Ruzsa distance is. The whole proof is one application of `diff_ent_le_rdist` followed by linear arithmetic.",
+          "steps": [
+            {
+              "start_line": 290,
+              "end_line": 290,
+              "explanation": "Invoke the entropic bound `diff_ent_le_rdist`, which for these measurable finite-range $X,Y$ states $|H[X;\\mu]-H[Y;\\mu']|\\le 2\\,d[X;\\mu\\#Y;\\mu']$, and combine it with the trivial bound $0\\le|H[X;\\mu]-H[Y;\\mu']|$. Transitivity of $\\ge$ turns the two into $0\\le 2\\,d[X;\\mu\\#Y;\\mu']$, and linear arithmetic then yields the goal $0\\le d[X;\\mu\\#Y;\\mu']$.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        }
+      ]
+    },
+    {
+      "name": "ent_of_proj_le",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "Both statements claim the upper bound H(π(X)) ≤ 2 d[X; U_H] for a random variable X taking values in an abelian (additive) group G, a finite subgroup H ≤ G, the quotient homomorphism π: G → G/H, and a uniform random variable U_H on H. The candidate's extra hypotheses (countability of G, measurable singletons, probability space setup, measurability, and finite range of the random variables) are standard formalization conventions that carry no difference in mathematical content.",
+      "reference_steps": [
+        {
+          "step": "Assume without loss of generality that X and U_H are independent by passing to independent copies.",
+          "evidence": "Steps 1–3 pass to independent copies X' and UH' under a measure ν, transfer uniformity of UH' on H, and use invariance of entropy and Ruzsa distance under identical distributions.",
+          "covered": "yes"
+        },
+        {
+          "step": "Establish the lower bound H(X - U_H | π(X)) ≥ H(X - U_H | X) = H(U_H) using data processing/submodularity, shear invariance, and independence.",
+          "evidence": "Step 6 shows H[X' - UH' | π ∘ X'; ν] ≥ H[X' - UH' | X'; ν] = H[UH' | X'; ν] = H[UH'; ν].",
+          "covered": "yes"
+        },
+        {
+          "step": "Establish the upper bound H(X - U_H | π(X)) ≤ log |H| = H(U_H) using the fact that conditioned on π(X), X - U_H is supported on a coset of H.",
+          "evidence": "Steps 5–6 bound the conditional entropy given π ∘ X' = y by log card(H) = H[UH'; ν] since X' - UH' a.e. lies in the fibre π⁻¹{y} of cardinality |H|, then sum over y.",
+          "covered": "yes"
+        },
+        {
+          "step": "Use the chain rule to obtain H(X - U_H) = H(π(X)) + H(U_H) and deduce d[X; U_H] = H(π(X)) + (H(U_H) - H(X))/2.",
+          "evidence": "Step 7 applies the chain rule via π ∘ (X' - UH') =ᵃᵉ π ∘ X' to get H[X' - UH'; ν] = H[π ∘ X'; ν] + H[UH'; ν], and Step 8 substitutes this into the Ruzsa distance definition for independent variables.",
+          "covered": "yes"
+        },
+        {
+          "step": "Combine the identity for d[X; U_H] with the entropy-difference bound d[X; U_H] ≥ |H(X) - H(U_H)|/2 to conclude H(π(X)) ≤ 2 d[X; U_H].",
+          "evidence": "Step 9 applies |H[X'; ν] - H[UH'; ν]| ≤ 2 d[X'; ν # UH'; ν] (`diff_ent_le_rdist`) and linear arithmetic to conclude H[π ∘ X'; ν] ≤ 2 d.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "ent_of_proj_le",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group carrying a measurable space structure whose singletons are measurable, let $\\mu$ and $\\mu'$ be probability measures on measurable spaces $\\Omega$ and $\\Omega'$, let $X:\\Omega\\to G$ and $UH:\\Omega'\\to G$ be measurable random variables with finite range, and let $H\\le G$ be a finite additive subgroup such that $UH$ is uniform on $H$ under $\\mu'$. Then, writing $\\pi:G\\to G/H$ for the quotient map, the entropy of the projection of $X$ modulo $H$ satisfies $H[\\pi\\circ X;\\mu]\\le 2\\,d[X;\\mu\\# UH;\\mu']$, i.e. it is at most twice the Ruzsa distance between (the law of) $X$ and (the law of) a variable uniform on $H$.",
+          "summary": "One first passes to independent copies $X',UH'$ of $X$ and of the variable $UH$ uniform on $H$, which leaves both the entropy of $\\pi\\circ X$ and the Ruzsa distance unchanged, so that $X'$ and $UH'$ are independent. The heart of the argument is the identity $H[X'-UH'\\mid\\pi\\circ X']=H[UH']$: conditional on $\\pi\\circ X'$, the difference $X'-UH'$ lives in a coset of $H$ of size $|H|$ whenever $UH'\\in H$ (a null complement), which yields $\\le\\log|H|=H[UH']$, while the data-processing inequality plus the identity $H[X'-UH'\\mid X']=H[UH'\\mid X']$ and independence yield the reverse inequality. Grouping the chain rule through the map $\\pi$ instead then gives $H[X'-UH']=H[\\pi\\circ X']+H[UH']$, so the Ruzsa distance takes the form $d=H[\\pi\\circ X']+(H[UH']-H[X'])/2$, and the entropy-difference bound $|H[X']-H[UH']|\\le 2d$ converts this into $H[\\pi\\circ X']\\le 2d$.",
+          "steps": [
+            {
+              "start_line": 301,
+              "end_line": 302,
+              "explanation": "Apply `independent_copies_finiteRange` to obtain a probability measure $\\nu$ on $G\\times G$ and measurable finite-range variables $X',UH'$ on $(G\\times G,\\nu)$ that are independent under $\\nu$ and identically distributed to $X$ under $\\mu$ and to $UH$ under $\\mu'$ respectively.",
+              "grounded": true
+            },
+            {
+              "start_line": 303,
+              "end_line": 304,
+              "explanation": "Transfer uniformity: since $UH'$ is identically distributed to $UH$, `IsUniform.of_identDistrib` gives that $UH'$ is uniform on $H$ under $\\nu$ as well.",
+              "grounded": true
+            },
+            {
+              "start_line": 305,
+              "end_line": 305,
+              "explanation": "Replace the goal by its primed version: identical distribution of $\\pi\\circ X'$ and $\\pi\\circ X$ (with $\\pi$ measurable, discharged by `fun_prop`) preserves entropy (`IdentDistrib.entropy_congr`), and identical distribution of the pairs preserves the Ruzsa distance (`IdentDistrib.rdist_congr`). The goal becomes $H[\\pi\\circ X';\\nu]\\le 2\\,d[X';\\nu\\# UH';\\nu]$.",
+              "grounded": true
+            },
+            {
+              "start_line": 306,
+              "end_line": 311,
+              "explanation": "Introduce notation and the side conditions needed later: $\\pi:=\\pi:G\\to G/H$ the quotient map, $\\nu_q:=(\\pi\\circ X')_*\\nu$ the law of $\\pi\\circ X'$; then record that $G/H$ is countable, that its singletons are measurable (preimages of measurable sets under the quotient map), and that $H$ is finite (from the hypothesis).",
+              "grounded": true
+            },
+            {
+              "start_line": 312,
+              "end_line": 341,
+              "explanation": "First half of the key identity $H[X'-UH'\\mid \\pi\\circ X';\\nu]=H[UH';\\nu]$: the pointwise bound $\\nu_q\\{y\\}\\,H[X'-UH'\\mid \\pi\\circ X'=y;\\nu]\\le \\nu_q\\{y\\}\\,H[UH';\\nu]$ for $y$ in the finite range of $\\pi\\circ X'$. Since the weight is nonnegative it suffices to bound the conditional entropies. After conditioning on $\\pi\\circ X'=y$ (measure $\\nu'=\\nu[\\cdot\\mid \\pi\\circ X'=y]$), the fibre $\\pi'^{-1}\\{y\\}$ of the quotient map has cardinality $\\mathrm{card}(H)$, via the bijection between a fibre and $H$ and hence is finite; the conditional law of $X'-UH'$ is supported on that fibre: off the set $T=\\{\\pi'\\circ X'\\neq y\\}$ and the set $U=\\{UH'\\notin H\\}$ — the latter is $\\nu$-null by uniformity and the former, being disjoint from the conditioning event, has $\\nu'$-measure $0$, so the complement is null. `entropy_le_log_card_of_mem_finite` then gives the conditional entropy at most $\\log \\mathrm{card}(\\pi'^{-1}\\{y\\})=\\log\\mathrm{card}(H)$, which equals the right side because $UH'$ is uniform on $H$ (`IsUniform.entropy_eq'`).",
+              "grounded": true
+            },
+            {
+              "start_line": 342,
+              "end_line": 361,
+              "explanation": "Complete the identity. The weights sum to one, $\\sum_y \\nu_q\\{y\\}=1$, because $\\nu_q$ is a probability measure and the complement of $\\mathrm{range}(\\pi\\circ X')$ is $\\nu_q$-null. Expanding the conditional entropy as the sum $\\sum_y\\nu_q\\{y\\}H[X'-UH'\\mid\\pi\\circ X'=y;\\nu]$ (`condEntropy_eq_sum`, which uses finite range of $X'-UH'$) and applying the termwise bounds yields $H[X'-UH'\\mid\\pi\\circ X';\\nu]\\le H[UH';\\nu]$. For the reverse inequality, conditioning on the coarser variable $\\pi\\circ X'$ can only increase entropy, so $H[X'-UH'\\mid\\pi\\circ X';\\nu]\\ge H[X'-UH'\\mid X';\\nu]$ (`condEntropy_comp_ge`); the latter equals $H[UH'\\mid X';\\nu]$ (`condEntropy_sub_left`) and hence $H[UH';\\nu]$ by independence. The two bounds give equality.",
+              "grounded": true
+            },
+            {
+              "start_line": 362,
+              "end_line": 371,
+              "explanation": "Derive the decomposition $H[X'-UH';\\nu]=H[\\pi\\circ X';\\nu]+H[UH';\\nu]$. First $H[X'-UH']=H[\\langle X'-UH',\\pi\\circ(X'-UH')\\rangle]$ because $\\pi\\circ(X'-UH')$ is a function of $X'-UH'$ (`entropy_prod_comp`). Next, $\\pi\\circ(X'-UH')$ may be replaced by $\\pi\\circ X'$: the two functions disagree exactly on the set where $UH'\\notin H$, which is $\\nu$-null by uniformity, so the joint laws coincide (`IdentDistrib.of_ae_eq`) and the entropies agree (`IdentDistrib.entropy_congr`). Finally the chain rule (`chain_rule`) expresses $H[\\langle X'-UH',\\pi\\circ X'\\rangle]$ as $H[\\pi\\circ X';\\nu]+H[X'-UH'\\mid\\pi\\circ X';\\nu]$, and the conditional entropy is $H[UH';\\nu]$ by the identity just proved.",
+              "grounded": true
+            },
+            {
+              "start_line": 372,
+              "end_line": 374,
+              "explanation": "Since $X'$ and $UH'$ are independent, $d[X';\\nu\\# UH';\\nu]=H[X'-UH';\\nu]-H[X';\\nu]/2-H[UH';\\nu]/2$ (`IndepFun.rdist_eq`); substituting the decomposition of the previous step gives $d[X';\\nu\\# UH';\\nu]=H[\\pi\\circ X';\\nu]+(H[UH';\\nu]-H[X';\\nu])/2$, by linear arithmetic.",
+              "grounded": true
+            },
+            {
+              "start_line": 375,
+              "end_line": 375,
+              "explanation": "Conclude. The entropy difference bound $|H[X';\\nu]-H[UH';\\nu]|\\le 2\\,d[X';\\nu\\# UH';\\nu]$ (`diff_ent_le_rdist`, applied to $X'$ and $UH'$ under $\\nu$) gives $H[X';\\nu]-H[UH';\\nu]\\le 2d$, i.e. $(H[UH']-H[X'])/2\\ge -d$. Combined with the formula for $d$ this yields $H[\\pi\\circ X';\\nu]=d-(H[UH']-H[X'])/2\\le 2d$, again by linear arithmetic.",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "π",
+              "latex": "\\pi",
+              "meaning": "the quotient map $G\\to G/H$"
+            },
+            {
+              "lean": "νq",
+              "latex": "\\nu_q",
+              "meaning": "the law $(\\pi\\circ X')_*\\nu$ of $\\pi\\circ X'$ under $\\nu$"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ent_of_diff_le",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The reference states the entropy inequality H[X - Y] <= H[X - Z] + H[Z - Y] - H[Z] for G-valued random variables X, Y, Z on Omega with (X, Y) independent of Z. The additive notation X - Y in the blueprint implicitly assumes G is an abelian group. The candidate states the exact same inequality, adding only standard formalization hypotheses (G is countable with measurable singletons, (Omega, mu) is a probability space, and X, Y, Z are measurable with finite range). Accounting for these formalization conventions, the mathematical claims are equivalent.",
+      "reference_steps": [],
+      "errors": [],
+      "coverage": null,
+      "explanations": [
+        {
+          "name": "ent_of_diff_le",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group written additively, equipped with a measurable space structure in which singletons are measurable, and let $(\\Omega,\\mu)$ be a probability space. Let $X,Y,Z:\\Omega\\to G$ be measurable finite-range random variables, and assume $(X,Y)$ is independent of $Z$ under $\\mu$. Then\n$$H[X-Y;\\mu]\\le H[X-Z;\\mu]+H[Z-Y;\\mu]-H[Z;\\mu],$$\nwhere $H[W;\\mu]$ denotes the Shannon entropy of the law of $W$ under $\\mu$.",
+          "summary": "The proof applies the triple entropy inequality to $(X-Z,Y,X-Y)$ and then estimates the two resulting joint entropies. The first is bounded by $H[X-Z]+H[Y-Z]$ using a functional contraction and nonnegativity of mutual information; the second by $H[X,Y]$ using the map $(x,y)\\mapsto(y,x-y)$. An invertible change of variables rewrites $H[(X-Z,(Y,X-Y))]$ as $H[(X,(Y,Z))]$, which splits as $H[(X,Y)]+H[Z]$ by independence. Cancelling $H[(X,Y)]$ leaves the desired inequality with $H[Y-Z]$, and symmetry of entropy differences replaces it by $H[Z-Y]$.",
+          "steps": [
+            {
+              "start_line": 411,
+              "end_line": 412,
+              "explanation": "Apply `entropy_triple_add_entropy_le` to the measurable finite-range variables $X-Z$, $Y$, and $X-Y$. That lemma states $H[(U,(V,W));\\mu]+H[W;\\mu]\\le H[(U,W);\\mu]+H[(V,W);\\mu]$. With $(U,V,W)=(X-Z,Y,X-Y)$ this gives\n$$H[(X-Z,(Y,X-Y));\\mu]+H[X-Y;\\mu]\\le H[(X-Z,X-Y);\\mu]+H[(Y,X-Y);\\mu].$$",
+              "grounded": true
+            },
+            {
+              "start_line": 413,
+              "end_line": 417,
+              "explanation": "The pair $(X-Z,X-Y)$ is the image of $(X-Z,Y-Z)$ under the map $(a,b)\\mapsto(a,a-b)$. Since postcomposition cannot increase entropy (`entropy_comp_le`; measurability of the pair is discharged by `fun_prop`), this gives the first half of the bound $h2$:\n$$H[(X-Z,X-Y);\\mu]\\le H[(X-Z,Y-Z);\\mu].$$",
+              "grounded": true
+            },
+            {
+              "start_line": 418,
+              "end_line": 421,
+              "explanation": "The second half of $h2$ is the subadditivity bound\n$$H[(X-Z,Y-Z);\\mu]\\le H[X-Z;\\mu]+H[Y-Z;\\mu].$$\nIndeed, the mutual information $H[X-Z;\\mu]+H[Y-Z;\\mu]-H[(X-Z,Y-Z);\\mu]$ is nonnegative by `mutualInfo_nonneg`, and `linarith` turns this nonnegativity into the displayed inequality.",
+              "grounded": true
+            },
+            {
+              "start_line": 422,
+              "end_line": 425,
+              "explanation": "Similarly, $(Y,X-Y)$ is $(x,y)\\mapsto(y,x-y)$ applied to $(X,Y)$, so entropy cannot increase (`entropy_comp_le`):\n$$H[(Y,X-Y);\\mu]\\le H[(X,Y);\\mu].$$",
+              "grounded": true
+            },
+            {
+              "start_line": 426,
+              "end_line": 432,
+              "explanation": "Show that $H[(X-Z,(Y,X-Y));\\mu]=H[(X,(Y,Z));\\mu]$. From $(a,(b,c))=(X-Z,(Y,X-Y))$ one recovers $(X,Y,Z)$ by $F(a,(b,c))=(b+c,b,-a+b+c)$; conversely $G(x,y,z)=(x-z,y,x-y)$ recovers $(X-Z,(Y,X-Y))$ from $(X,Y,Z)$. Both tuples are measurable and finite range, so `entropy_of_comp_eq_of_comp` applies; the two required identities are checked coordinatewise with `simp`.",
+              "grounded": true
+            },
+            {
+              "start_line": 433,
+              "end_line": 435,
+              "explanation": "Next, $H[(X,(Y,Z));\\mu]=H[(X,Y);\\mu]+H[Z;\\mu]$. Use `entropy_assoc` to identify $H[(X,(Y,Z));\\mu]$ with $H[((X,Y),Z);\\mu]$, and then use `entropy_pair_eq_add`, which states $H[(A,B);\\mu]=H[A;\\mu]+H[B;\\mu]$ iff $A$ and $B$ are independent. Here $A=(X,Y)$ and $B=Z$, so the equality is exactly the independence hypothesis.",
+              "grounded": true
+            },
+            {
+              "start_line": 436,
+              "end_line": 436,
+              "explanation": "Substitute the two entropy identities into the inequality from the first step. This yields\n$$H[(X,Y);\\mu]+H[Z;\\mu]+H[X-Y;\\mu]\\le H[(X-Z,X-Y);\\mu]+H[(Y,X-Y);\\mu].$$",
+              "grounded": true
+            },
+            {
+              "start_line": 437,
+              "end_line": 440,
+              "explanation": "Combine this inequality with the bounds for $H[(X-Z,X-Y);\\mu]$ and $H[(Y,X-Y);\\mu]$. Linear arithmetic cancels $H[(X,Y);\\mu]$ and gives\n$$H[X-Y;\\mu]\\le H[X-Z;\\mu]+H[Y-Z;\\mu]-H[Z;\\mu].$$\nFinally, after reducing to the second summand with `congr 2`, rewrite using `entropy_sub_comm`, which gives $H[Y-Z;\\mu]=H[Z-Y;\\mu]$; the right-hand side becomes $H[X-Z;\\mu]+H[Z-Y;\\mu]-H[Z;\\mu]$.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        }
+      ]
+    },
+    {
+      "name": "rdist_triangle",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The candidate includes the standard formalization hypotheses omitted in the informal blueprint (that G is a countable abelian group with measurable singletons, and that X, Y, Z are measurable finite-range random variables on probability spaces). Although the roles of the universally quantified variables Y and Z are swapped between the blueprint (d[X;Y] <= d[X;Z] + d[Z;Y]) and the candidate (d[X;Z] <= d[X;Y] + d[Y;Z]), this is a pure renaming of dummy variables, so the two statements make the exact same mathematical claim.",
+      "reference_steps": [
+        {
+          "step": "Reduce to the case where X, Y, Z are defined on the same probability space and are jointly independent, using the existence of independent copies and invariance of Ruzsa distance under identical distribution.",
+          "evidence": "Steps 1 and 2 apply `independent_copies3_nondep_finiteRange` to obtain jointly independent copies X', Y', Z' on a single probability space (A, mu_A) identically distributed to X, Y, Z, and use `IdentDistrib.rdist_congr` to reduce the inequality to these copies.",
+          "covered": "yes"
+        },
+        {
+          "step": "Deduce the triangle inequality for independent variables from the improved Ruzsa triangle entropy inequality and the entropy formula for the Ruzsa distance of independent variables.",
+          "evidence": "Steps 3 through 7 extract the independence of <X', Z'> from Y' via `iIndepFun.indepFun_prodMk`, apply the entropy inequality `ent_of_diff_le` (H[X'-Z'] <= H[X'-Y'] + H[Y'-Z'] - H[Y']), subtract H[X']/2 + H[Z']/2 from both sides, and identify the resulting terms as Ruzsa distances via `IndepFun.rdist_eq`.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "rdist_triangle",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group with measurable singletons, let $(\\Omega,\\mu)$, $(\\Omega',\\mu')$, $(\\Omega'',\\mu'')$ be probability spaces, and let $X:\\Omega\\to G$, $Y:\\Omega'\\to G$, $Z:\\Omega''\\to G$ be measurable random variables with finite range. Then the Ruzsa distance satisfies the triangle inequality $$d[X;\\mu \\# Z;\\mu''] \\le d[X;\\mu \\# Y;\\mu'] + d[Y;\\mu' \\# Z;\\mu''].$$",
+          "summary": "The proof replaces $X,Y,Z$ by jointly independent copies $X',Y',Z'$ on a single probability space, to which the three distances are carried by identical distribution. There, the triangle inequality is the entropy inequality $H[X'-Z'] \\le H[X'-Y'] + H[Y'-Z'] - H[Y']$, valid because $\\langle X',Z'\\rangle$ is independent of $Y'$ (a consequence of joint independence), with the same correction term $H[X']/2 + H[Z']/2$ subtracted on both sides; the two sides are then recognised as the Ruzsa distances via the independence formula $d = H[\\text{difference}] - H/2 - H/2$.",
+          "steps": [
+            {
+              "start_line": 448,
+              "end_line": 449,
+              "explanation": "Apply the independent-copies theorem `independent_copies3_nondep_finiteRange` to the three variables: it produces a probability space $(A,\\mu_A)$ carrying measurable finite-range $G$-valued variables $X',Y',Z'$ that are jointly independent under $\\mu_A$ and identically distributed to $X$ (under $\\mu$), $Y$ (under $\\mu'$), $Z$ (under $\\mu''$) respectively.",
+              "grounded": true
+            },
+            {
+              "start_line": 450,
+              "end_line": 451,
+              "explanation": "Reduce to the common-space inequality $d[X';\\mu_A\\#Z';\\mu_A] \\le d[X';\\mu_A\\#Y';\\mu_A] + d[Y';\\mu_A\\#Z';\\mu_A]$. The original claim follows from it by transporting along the identically-distributed pairs with `IdentDistrib.rdist_congr`, which states that $d[X;\\mu\\#Y;\\mu'] = d[X';\\mu''\\#Y';\\mu''']$ whenever $X,X'$ and $Y,Y'$ are respectively identically distributed.",
+              "grounded": true
+            },
+            {
+              "start_line": 452,
+              "end_line": 454,
+              "explanation": "Record that the pair $\\langle X',Z'\\rangle$ is independent of $Y'$: this is extracted from the joint independence of the triple by `iIndepFun.indepFun_prodMk` with indices $0,2$ on one side and $1$ on the other. The side conditions (measurability of each member of the family, and the index inequalities $0\\ne1$, $2\\ne1$) are discharged by case analysis on the index and arithmetic on natural numbers.",
+              "grounded": true
+            },
+            {
+              "start_line": 455,
+              "end_line": 457,
+              "explanation": "First link of the calculation: since $X'$ and $Z'$ are independent (indices $0$ and $2$ of the independent family), `IndepFun.rdist_eq` gives $d[X';\\mu_A\\#Z';\\mu_A] = H[X'-Z';\\mu_A] - H[X';\\mu_A]/2 - H[Z';\\mu_A]/2$; this is then rewritten by `ring` into the form $H[X'-Z';\\mu_A] - (H[X';\\mu_A]/2 + H[Z';\\mu_A]/2)$ in which the inequality step is stated.",
+              "grounded": true
+            },
+            {
+              "start_line": 458,
+              "end_line": 459,
+              "explanation": "The key entropy inequality: `ent_of_diff_le`, applied with the independence $\\langle X',Z'\\rangle\\perp Y'$ established above, says $H[X'-Z';\\mu_A] \\le H[X'-Y';\\mu_A] + H[Y'-Z';\\mu_A] - H[Y';\\mu_A]$ (in the lemma's own naming, $(X,Z)$ independent of $Y$ bounds $H[X-Z]$ by $H[X-Y]+H[Y-Z]-H[Y]$). Subtracting the same quantity $H[X';\\mu_A]/2 + H[Z';\\mu_A]/2$ from both sides gives the displayed inequality, since subtraction is monotone on the right.",
+              "grounded": true
+            },
+            {
+              "start_line": 460,
+              "end_line": 461,
+              "explanation": "Regroup the resulting expression algebraically (by `ring`) into the sum of the two Ruzsa-type expressions $\\big(H[X'-Y';\\mu_A] - H[X';\\mu_A]/2 - H[Y';\\mu_A]/2\\big) + \\big(H[Y'-Z';\\mu_A] - H[Y';\\mu_A]/2 - H[Z';\\mu_A]/2\\big)$.",
+              "grounded": true
+            },
+            {
+              "start_line": 462,
+              "end_line": 465,
+              "explanation": "Identify the two summands with Ruzsa distances: `IndepFun.rdist_eq` applied to the independent pairs $(X',Y')$ and $(Y',Z')$ (indices $0\\ne1$ and $1\\ne2$ of the independent family, again with measurability and index side conditions discharged) rewrites $d[X';\\mu_A\\#Y';\\mu_A]$ and $d[Y';\\mu_A\\#Z';\\mu_A]$ as the corresponding entropy expressions, matching the previous line and closing the calculation.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        }
+      ]
+    },
+    {
+      "name": "condRuzsaDist_of_copy + condRuzsaDist'_of_copy + condRuzsaDist_of_indep + condRuzsaDist'_of_indep",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The reference statement makes three claims (with two variants of copy-invariance implied): copy-invariance of conditional Ruzsa distance d[X|Z; Y|W] (and analogously d[X; Y|W]), the entropy formula for d[X|Z; Y|W] when (X,Z) and (Y,W) are independent, and the analogous entropy formula for d[X; Y|W] when X and (Y,W) are independent (the independence condition for the last identity being implicit in 'similarly'). The candidate's four parts (`condRuzsaDist_of_copy`, `condRuzsaDist'_of_copy`, `condRuzsaDist_of_indep`, `condRuzsaDist'_of_indep`) formalize precisely these claims. Allowing simultaneous replacement of both arguments by copies is equivalent to replacing either one at a time (by taking the other copy to be the variable itself), and allowing finite measures in the copy-invariance lemmas alongside standard formalization hypotheses (countable spaces with measurable singletons, measurability, finite range of conditioning variables, probability measures for the entropy identities) introduces no mathematical discrepancy.",
+      "reference_steps": [
+        {
+          "step": "Unfold the definitions of conditional Ruzsa distance and conditional entropy, and apply the copy-invariance of entropy and Ruzsa distance together with the entropy formula for the Ruzsa distance of independent random variables.",
+          "evidence": "All four parts unfold the definitions of conditional Ruzsa distance (`condRuzsaDist_def`, `condRuzsaDist'_def`), and `condRuzsaDist_of_indep` and `condRuzsaDist'_of_indep` unfold conditional entropy (`condEntropy_eq_kernel_entropy`) and prove the independence identities via the kernel counterpart of the Ruzsa distance formula and independence of conditional distributions (`Kernel.rdist_eq'`, `condDistrib_eq_prod_of_indepFun`). For copy-invariance (`condRuzsaDist_of_copy`, `condRuzsaDist'_of_copy`), the formal proof takes a slightly more direct route, proving that the conditional distributions themselves agree at non-null fibres rather than invoking copy-invariance of entropy and Ruzsa distance.",
+          "covered": "partial"
+        }
+      ],
+      "errors": [
+        "In `condRuzsaDist_of_indep` (Step 4), the candidate refers to 'the pushforward of the product kernel by (z,w,x,y) ↦ x - y'. Because the product kernel is a Markov kernel from S × T to G × G, pushing its fibre measures forward (`Kernel.map`) acts on G × G via (x,y) ↦ x - y, not on S × T × G × G.",
+        "In `condRuzsaDist'_of_indep` (Step 4), the candidate states that the conditional law of (X,Y) given (Z,W) is a.e. the product of condDistrib X Z μ '(placed on the right factor)' and condDistrib Y W μ '(placed on the left factor)'. This reverses the factors: condDistrib X Z μ is the first (left) factor of the product (and depends on the left conditioning coordinate Z), while condDistrib Y W μ is the second (right) factor (and depends on W); swapping them would give the conditional law of (Y,X) rather than (X,Y). (Lean's `prodMkRight` and `prodMkLeft` refer instead to the side of the conditioning domain on which the dummy coordinate is adjoined.)",
+        "In `condRuzsaDist'_of_indep` (Steps 7 and 9), the law μ ∘ (Z,W)⁻¹ on {*} × T is written as (W_* μ) ∘ (pt ↦ (pt, ·))⁻¹. Since W_* μ is a measure on T, the pushforward map from T to {*} × T is t ↦ (*, t); the expression pt ↦ (pt, ·) erroneously binds the first coordinate as the function argument instead of fixing it to * and leaves an unbound placeholder in the second coordinate."
+      ],
+      "coverage": 0.5,
+      "explanations": [
+        {
+          "name": "condRuzsaDist_of_copy",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group whose singletons are measurable, let $S$ and $T$ be measurable spaces with measurable singletons, and let $(\\Omega,\\mu)$, $(\\Omega',\\mu')$, $(\\Omega'',\\mu'')$, $(\\Omega''',\\mu''')$ be finite measure spaces. Let $X:\\Omega\\to G$, $Z:\\Omega\\to S$, $Y:\\Omega'\\to G$, $W:\\Omega'\\to T$, $X':\\Omega''\\to G$, $Z':\\Omega''\\to S$, $Y':\\Omega'''\\to G$, $W':\\Omega'''\\to T$ be measurable, with $Z,W,Z',W'$ of finite range. If $(X,Z)$ and $(X',Z')$ are identically distributed under $\\mu,\\mu''$, and $(Y,W)$ and $(Y',W')$ are identically distributed under $\\mu',\\mu'''$, then the conditional Ruzsa distances agree: $d[X \\mid Z;\\mu \\# Y \\mid W;\\mu'] = d[X' \\mid Z';\\mu'' \\# Y' \\mid W';\\mu''']$.",
+          "summary": "The proof computes both conditional Ruzsa distances as finite sums over the product $A\\times B$ of the (finite) ranges of $Z,Z'$ and $W,W'$. The product measures $(\\mu\\circ Z^{-1})\\otimes(\\mu'\\circ W^{-1})$ and $(\\mu''\\circ Z'^{-1})\\otimes(\\mu'''\\circ W'^{-1})$ are concentrated on that finite set, so the integrals defining the kernel Ruzsa distance collapse to finite sums; after replacing the marginals of the primed variables by the unprimed ones (which are equal by the two identical-distribution hypotheses) the two sums have identical coefficients. It remains to compare summands at each $x\\in A\\times B$: when either fibre is null both coefficients vanish, and otherwise the conditional laws at the fibres are computed by the Bayes-type formula for conditional distributions, where the fibre masses agree because the laws of $Z$ and $Z'$ (resp. $W$ and $W'$) agree, and the joint numerator measures agree because the laws of $(X,Z)$ and $(X',Z')$ (resp. $(Y,W)$ and $(Y',W')$) agree. Thus the conditional laws of $X$ given $Z$ and of $X'$ given $Z'$ (resp. of $Y$ given $W$ and of $Y'$ given $W'$) coincide, and so do the conditional Ruzsa distances.",
+          "steps": [
+            {
+              "start_line": 829,
+              "end_line": 831,
+              "explanation": "Fix the two finite sets that will carry all the mass below: $A = \\operatorname{range} Z \\cup \\operatorname{range} Z' \\subseteq S$ and $B = \\operatorname{range} W \\cup \\operatorname{range} W' \\subseteq T$, encoded as finsets via `FiniteRange.toFinset` (this is where the finite-range hypotheses on $Z,W,Z',W'$ are used).",
+              "grounded": true
+            },
+            {
+              "start_line": 832,
+              "end_line": 841,
+              "explanation": "Show that $A\\times B$ is a set of full measure for $(\\mu\\circ Z^{-1})\\otimes(\\mu'\\circ W^{-1})$: `Measure.prod_of_full_measure_finset` reduces this to the two marginals vanishing off $A$ and off $B$, and each of those holds because $A$ contains $\\operatorname{range} Z$ and $B$ contains $\\operatorname{range} W$ (`FiniteRange.range`), so $Z^{-1}(A^{\\mathsf c}) = \\emptyset = W^{-1}(B^{\\mathsf c})$ and the measure of the empty set is $0$; the measurability side conditions are closed by measurability.",
+              "grounded": true
+            },
+            {
+              "start_line": 842,
+              "end_line": 851,
+              "explanation": "The same argument for the primed objects: $A\\times B$ also carries full mass for $(\\mu''\\circ Z'^{-1})\\otimes(\\mu'''\\circ W'^{-1})$, again because $A\\supseteq\\operatorname{range} Z'$ and $B\\supseteq\\operatorname{range} W'$.",
+              "grounded": true
+            },
+            {
+              "start_line": 852,
+              "end_line": 854,
+              "explanation": "Unfold the conditional Ruzsa distance (`condRuzsaDist_def`: $d[X\\mid Z;\\mu\\#Y\\mid W;\\mu'] = d_k[\\operatorname{condDistrib} X Z \\mu; \\mu Z^{-1} \\# \\operatorname{condDistrib} Y W \\mu'; \\mu' W^{-1}]$) and the kernel Ruzsa distance (`Kernel.rdist`: $d_k[\\kappa,\\mu\\#\\eta,\\nu] = \\int \\operatorname{rdistm}(\\kappa(p_1),\\eta(p_2))\\,d(\\mu\\otimes\\nu)$). Since the product measures are concentrated on the finite set $A\\times B$, the two integrals may be taken over $A\\times B$ and hence become finite sums; the goal becomes: $\\sum_{x\\in A\\times B} ((\\mu\\circ Z^{-1})\\otimes(\\mu'\\circ W^{-1}))(\\{x\\})\\cdot \\operatorname{rdistm}\\big((\\operatorname{condDistrib} X Z \\mu)_{x_1},(\\operatorname{condDistrib} Y W \\mu')_{x_2}\\big)$ equals the analogous sum with primes.",
+              "grounded": true
+            },
+            {
+              "start_line": 855,
+              "end_line": 858,
+              "explanation": "Extract the marginal laws: identical distribution of $(X,Z)$ and $(X',Z')$ gives $\\mu\\circ Z^{-1} = \\mu''\\circ Z'^{-1}$ (compose with the second projection and apply `IdentDistrib.map_eq`), and likewise $\\mu'\\circ W^{-1} = \\mu'''\\circ W'^{-1}$ from the second copy hypothesis. Rewriting with these equalities and with `Measure.prod_real_apply_singleton` ($(\\mu\\otimes\\nu)(\\{p\\}) = \\mu(\\{p_1\\})\\cdot\\nu(\\{p_2\\})$) and `map_measureReal_apply`, both sums acquire the *same* coefficient $\\mu(Z^{-1}\\{x_1\\})\\cdot\\mu'(W^{-1}\\{x_2\\})$; only the $\\operatorname{rdistm}$ terms still differ.",
+              "grounded": true
+            },
+            {
+              "start_line": 859,
+              "end_line": 859,
+              "explanation": "Reduce the identity of the two finite sums to a pointwise identity: fix $x \\in A\\times B$ and compare the $x$-th summands.",
+              "grounded": true
+            },
+            {
+              "start_line": 860,
+              "end_line": 867,
+              "explanation": "Dispose of the degenerate fibres. If $\\mu(Z^{-1}\\{x_1\\}) = 0$ or if $\\mu'(W^{-1}\\{x_2\\}) = 0$, the common coefficient is $0$ (a real-valued measure of a null set), so both summands vanish and the pointwise identity holds; this is checked by turning the scalar-multiplication identity into a disjunction and simplifying with the vanishing mass.",
+              "grounded": true
+            },
+            {
+              "start_line": 868,
+              "end_line": 881,
+              "explanation": "Assume both fibre masses are nonzero. The remaining goals are the equality of the two conditional kernels at the fibres, starting with the $X$-side: $(\\operatorname{condDistrib} X Z \\mu)_{x_1} = (\\operatorname{condDistrib} X' Z' \\mu'')_{x_1}$. First, the two fibre masses agree, $\\mu(Z^{-1}\\{x_1\\}) = \\mu''(Z'^{-1}\\{x_1\\})$, by evaluating $\\mu\\circ Z^{-1} = \\mu''\\circ Z'^{-1}$ at the singleton. Then, for a measurable $s \\subseteq G$, `condDistrib_apply'` writes the left value as $\\mu(Z^{-1}\\{x_1\\})^{-1}\\mu(Z^{-1}\\{x_1\\}\\cap X^{-1}s)$ and the right value analogously, with the non-vanishing side condition for the primed measure supplied by the fibre-mass equality. The two numerator measures coincide because $\\mu\\circ\\langle X,Z\\rangle^{-1} = \\mu''\\circ\\langle X',Z'\\rangle^{-1}$ (from the identical-distribution hypothesis): applying this to $s\\times\\{x_1\\}$ and rewriting by `Measure.map_apply` for the measurable maps $\\langle X,Z\\rangle$, $\\langle X',Z'\\rangle$, together with the description of the preimage of a product set and commutativity of intersection, yields exactly $\\mu(Z^{-1}\\{x_1\\}\\cap X^{-1}s) = \\mu''(Z'^{-1}\\{x_1\\}\\cap X'^{-1}s)$.",
+              "grounded": true
+            },
+            {
+              "start_line": 882,
+              "end_line": 894,
+              "explanation": "Repeat the same argument for the $Y$-side: the fibre masses satisfy $\\mu'(W^{-1}\\{x_2\\}) = \\mu'''(W'^{-1}\\{x_2\\})$ from $\\mu'\\circ W^{-1} = \\mu'''\\circ W'^{-1}$, `condDistrib_apply'` rewrites both conditional probabilities (with the primed non-vanishing condition discharged from that equality), and the measures $\\mu'(W^{-1}\\{x_2\\}\\cap Y^{-1}s)$ and $\\mu'''(W'^{-1}\\{x_2\\}\\cap Y'^{-1}s)$ agree because $\\mu'\\circ\\langle Y,W\\rangle^{-1} = \\mu'''\\circ\\langle Y',W'\\rangle^{-1}$. This closes the pointwise identity and hence the theorem.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        },
+        {
+          "name": "condRuzsaDist'_of_copy",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group whose points are measurable, $T$ a measurable space whose points are measurable, and $\\mu,\\mu',\\mu'',\\mu'''$ measures on measurable spaces $\\Omega,\\Omega',\\Omega'',\\Omega'''$, with $\\mu',\\mu''$ and $\\mu'''$ finite. Let $X:\\Omega\\to G$, $X':\\Omega''\\to G$, $Y:\\Omega'\\to G$, $Y':\\Omega'''\\to G$ and $W:\\Omega'\\to T$, $W':\\Omega'''\\to T$, where $Y,W,Y',W'$ are measurable and $W,W'$ have finite range. If $X$ and $X'$ are identically distributed (i.e. $\\mu_*X=\\mu''_*X'$) and $(Y,W)$ and $(Y',W')$ are identically distributed under $\\mu'$ and $\\mu'''$, then the conditional Ruzsa distances agree: $d[X;\\mu \\# Y\\mid W;\\mu'] = d[X';\\mu'' \\# Y'\\mid W';\\mu''']$. (In Lean the notation is `condRuzsaDist'`; $X$ and $X'$ themselves need not be measurable, only their laws are used.)",
+          "summary": "By definition each conditional Ruzsa distance is the integral of $\\mathrm{rdistm}$ between the constant kernel of the law of $X$ and the conditional law of $Y$ given $W$, against $\\delta_{()}\\otimes W_*\\mu'$. Because $W$ and $W'$ have finite range, both integrals collapse to finite sums over the common set $A=\\operatorname{range}(W)\\cup\\operatorname{range}(W')$. The identical distribution of $(Y,W)$ and $(Y',W')$ makes the weights of the two sums equal (it gives $W_*\\mu'=W'_*\\mu'''$), makes the summands vanish where $\\mu'(W^{-1}\\{t\\})=0$, and gives $\\mu'''(W'^{-1}\\{t\\})=\\mu'(W^{-1}\\{t\\})$ in the remaining case. There the first argument of $\\mathrm{rdistm}$ is the same measure because $\\mu_*X=\\mu''_*X'$, and the second argument, the conditional law of $Y$ given $W=t$, is identified by the explicit formula $\\mu'(W^{-1}\\{t\\})^{-1}\\mu'(W^{-1}\\{t\\}\\cap\\cdot)$; the denominators agree as just noted, and the numerators agree because $(Y,W)_*\\mu'=(Y',W')_*\\mu'''$ evaluated on $s\\times\\{t\\}$ yields $\\mu'(W^{-1}\\{t\\}\\cap Y^{-1}s)=\\mu'''(W'^{-1}\\{t\\}\\cap Y'^{-1}s)$.",
+          "steps": [
+            {
+              "start_line": 903,
+              "end_line": 904,
+              "explanation": "Work classically and fix the finite set $A=\\operatorname{range}(W)\\cup\\operatorname{range}(W')\\subseteq T$; it is finite because $W$ and $W'$ have finite range. This set is the common index set for all the sums below.",
+              "grounded": true
+            },
+            {
+              "start_line": 905,
+              "end_line": 920,
+              "explanation": "Show that both product measures $\\delta_{()}\\otimes W_*\\mu'$ and $\\delta_{()}\\otimes W'_*\\mu'''$ are concentrated on $\\{()\\}\\times A$. Both are instances of `Measure.prod_of_full_measure_finset`, which states that if $\\mu(A^{c})=0$ and $\\nu(B^{c})=0$ then $(\\mu\\otimes\\nu)((A\\times B)^{c})=0$. The first factor is trivial ($\\delta_{()}$ gives full mass to the whole one-point space), and the second reduces, by the definition of pushforward on the measurable set $A^{c}$, to $\\mu'(W^{-1}A^{c})=\\mu'\\varnothing=0$ since $A$ contains the range of $W$; likewise with $W',\\mu'''$ in place of $W,\\mu'$.",
+              "grounded": true
+            },
+            {
+              "start_line": 921,
+              "end_line": 923,
+              "explanation": "Unfold the two definitions. `condRuzsaDist'_def` says that $d[X;\\mu\\#Y\\mid W;\\mu']$ is the kernel Ruzsa distance $d_k[\\mathrm{const}_\\bullet(\\mu_*X);\\delta_{()} \\# \\mathrm{condDistrib}(Y,W,\\mu'); W_*\\mu']$, where by `Kernel.rdist` $d_k[\\kappa;\\nu\\#\\eta;\\nu'] = \\int \\mathrm{rdistm}(\\kappa(p_1),\\eta(p_2))\\,d(\\nu\\otimes\\nu')$ with $\\mathrm{rdistm}(\\alpha,\\beta)=H_m[\\alpha*\\beta]-\\tfrac12 H_m[\\alpha]-\\tfrac12 H_m[\\beta]$ (`Kernel.rdistm`). Using the concentration proved above, the two integrals are rewritten as finite sums over $x\\in\\{()\\}\\times A$: the goal becomes the equality of $\\sum_{x}(\\delta_{()}\\otimes W_*\\mu').\\mathrm{real}\\{x\\}\\cdot \\mathrm{rdistm}\\big(\\mathrm{const}(\\mu_*X)_{x_1},\\ \\mathrm{condDistrib}(Y,W,\\mu')_{x_2}\\big)$ with the corresponding sum built from $X',Y',W',\\mu''',\\mu''$.",
+              "grounded": true
+            },
+            {
+              "start_line": 924,
+              "end_line": 924,
+              "explanation": "From the identical distribution of $(Y,W)$ and $(Y',W')$ deduce, by pushing forward along the second coordinate, that $W_*\\mu' = W'_*\\mu'''$.",
+              "grounded": true
+            },
+            {
+              "start_line": 925,
+              "end_line": 926,
+              "explanation": "Normalise the weights of the two sums: `Measure.prod_real_apply_singleton` gives $(\\delta_{()}\\otimes\\nu).\\mathrm{real}\\{(u,t)\\}=\\delta_{()}.\\mathrm{real}\\{u\\}\\cdot\\nu.\\mathrm{real}\\{t\\}$, and $\\nu.\\mathrm{real}\\{t\\}=(W_*\\mu')(\\{t\\})=\\mu'(W^{-1}\\{t\\})$ for $\\nu=W_*\\mu'$. Replacing $W'_*\\mu'''$ by $W_*\\mu'$ makes the two summands carry the identical coefficient $\\delta_{()}.\\mathrm{real}\\{x_1\\}\\cdot\\mu'.\\mathrm{real}(W^{-1}\\{x_2\\})$, so it suffices to fix $x\\in\\{()\\}\\times A$ and prove the identity of the two $\\mathrm{rdistm}$ terms.",
+              "grounded": true
+            },
+            {
+              "start_line": 927,
+              "end_line": 930,
+              "explanation": "Case $\\mu'(W^{-1}\\{t\\})=0$ for $t=x_2$: then the common coefficient $\\mu'.\\mathrm{real}(W^{-1}\\{t\\})$ is $0$ (a `Measure.real` of a null set), so both sides of the pointwise identity vanish.",
+              "grounded": true
+            },
+            {
+              "start_line": 931,
+              "end_line": 932,
+              "explanation": "In the nonvanishing case the coefficients on the two sides are syntactically the same, so `congr 2` reduces the summand identity to the equality of the two arguments of $\\mathrm{rdistm}$. The first argument is settled first: $\\mathrm{const}(\\mu_*X)$ evaluated at $x_1$ is the measure $\\mu_*X$ (`Kernel.const_apply`), and $\\mu_*X=\\mu''_*X'$ is exactly the pushforward equality supplied by the identical distribution of $X$ and $X'$.",
+              "grounded": true
+            },
+            {
+              "start_line": 933,
+              "end_line": 936,
+              "explanation": "Record that the conditioning probabilities match: $\\mu'(W^{-1}\\{t\\})=\\mu'''(W'^{-1}\\{t\\})$. Apply $W_*\\mu'=W'_*\\mu'''$ to the singleton $\\{t\\}$ and rewrite both sides by the definition of pushforward on the measurable singleton (using measurability of $W$ and $W'$ and that points of $T$ are measurable). This fact is used below only to convert the nonvanishing hypothesis from $\\mu'$ to $\\mu'''$.",
+              "grounded": true
+            },
+            {
+              "start_line": 937,
+              "end_line": 939,
+              "explanation": "Now show the second argument of $\\mathrm{rdistm}$ agrees, i.e. the two conditional laws at $t$ are equal; since these are measures on $G$, it suffices to test a measurable set $s\\subseteq G$. Both sides are evaluated by `condDistrib_apply'`, which states that for measurable $X,Y$ and $\\mu(Y^{-1}\\{x\\})\\neq 0$, $\\mathrm{condDistrib}(X,Y,\\mu)(x)(s)=\\mu(Y^{-1}\\{x\\})^{-1}\\mu(Y^{-1}\\{x\\}\\cap X^{-1}s)$. The nonzero-measure side condition for the primed term, $\\mu'''(W'^{-1}\\{t\\})\\neq 0$, is the one deferred side goal, discharged from the hypothesis $\\mu'(W^{-1}\\{t\\})\\neq 0$ and the equality of the previous step.",
+              "grounded": true
+            },
+            {
+              "start_line": 940,
+              "end_line": 945,
+              "explanation": "What remains is the equality of the numerators $\\mu'(W^{-1}\\{t\\}\\cap Y^{-1}s)=\\mu'''(W'^{-1}\\{t\\}\\cap Y'^{-1}s)$ (the inverse factors already coincide). This is obtained from the pushforward equality $(Y,W)_*\\mu'=(Y',W')_*\\mu'''$ coming from the identical distribution of $(Y,W)$ and $(Y',W')$, applied to the measurable rectangle $s\\times\\{t\\}$ and rewritten by the definition of pushforward (using measurability of $(Y,W)$ and $(Y',W')$); the preimage of $s\\times\\{t\\}$ is $W^{-1}\\{t\\}\\cap Y^{-1}s$ (resp. $W'^{-1}\\{t\\}\\cap Y'^{-1}s$), and commuting the two intersections puts the result in the required shape.",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "d[X ; μ # Y | W ; μ']",
+              "latex": "d[X;\\mu \\# Y \\mid W;\\mu']",
+              "meaning": "conditional Ruzsa distance between the law of X under μ and the conditional law of Y given W under μ' (condRuzsaDist')"
+            }
+          ]
+        },
+        {
+          "name": "condRuzsaDist_of_indep",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group whose measurable space has measurable singletons, let $S$ and $T$ be countable measurable spaces with measurable singletons, and let $\\mu$ be a probability measure on $\\Omega$. Let $X,Y:\\Omega\\to G$, $Z:\\Omega\\to S$ and $W:\\Omega\\to T$ be measurable, with $Z$ and $W$ of finite range, and suppose that the pairs $(X,Z)$ and $(Y,W)$ are independent under $\\mu$. Then\n$$d[X\\mid Z;\\mu \\# Y\\mid W;\\mu] = H[X-Y \\mid \\langle Z,W\\rangle;\\mu] - \\tfrac12 H[X\\mid Z;\\mu] - \\tfrac12 H[Y\\mid W;\\mu].$$",
+          "summary": "The proof rewrites the conditional Ruzsa distance as the kernel Ruzsa distance of the two conditional laws $\\mathrm{condDistrib}(X,Z)$ and $\\mathrm{condDistrib}(Y,W)$, and likewise rewrites the three conditional entropies as kernel entropies. After the two half-entropy terms cancel, one has to identify the entropy of the difference of the two conditional laws with the kernel entropy of $\\mathrm{condDistrib}(X-Y,\\langle Z,W\\rangle)$. Independence of $(X,Z)$ and $(Y,W)$ makes the law of $(Z,W)$ a product measure indexed by $(Z,W)$ itself, and makes $\\mathrm{condDistrib}((X,Y),(Z,W))$ almost everywhere the product of the two conditional laws; pushing this identity forward by the subtraction map (via the composition rule for conditional distributions) gives the claim.",
+          "steps": [
+            {
+              "start_line": 734,
+              "end_line": 736,
+              "explanation": "Translate everything into the language of kernels. By `condRuzsaDist_def` the conditional Ruzsa distance is the kernel Ruzsa distance between the kernels $\\kappa = \\mathrm{condDistrib}(X,Z)$ and $\\eta = \\mathrm{condDistrib}(Y,W)$ with respect to the measures $\\mu_Z = Z_*\\mu$ and $\\mu_W = W_*\\mu$; by `Kernel.rdist_eq'` that kernel Ruzsa distance equals the kernel entropy of the difference kernel built from $\\kappa$ and $\\eta$ minus half the entropy of $\\kappa$ minus half the entropy of $\\eta$; and by `condEntropy_eq_kernel_entropy` (applied three times) each conditional entropy $H[X\\mid Z;\\mu]$, $H[Y\\mid W;\\mu]$, $H[X-Y\\mid \\langle Z,W\\rangle;\\mu]$ is the kernel entropy of the corresponding conditional distribution. This leaves the main equality of entropies, plus a side goal that $X-Y$ be measurable, which is supplied by measurability of $X$ and $Y$.",
+              "grounded": true
+            },
+            {
+              "start_line": 737,
+              "end_line": 737,
+              "explanation": "The two half-entropy terms on the left and on the right are literally the same, so $\\mathrm{congr}\\,2$ cancels them and reduces the goal to the equality of the first entropy terms: the entropy of the difference kernel computed from $\\mathrm{condDistrib}(X,Z)$ and $\\mathrm{condDistrib}(Y,W)$ against $\\mu_Z\\otimes\\mu_W$ equals the kernel entropy of $\\mathrm{condDistrib}(X-Y,\\langle Z,W\\rangle)$ against $(Z,W)_*\\mu$.",
+              "grounded": true
+            },
+            {
+              "start_line": 738,
+              "end_line": 741,
+              "explanation": "Deduce the independence of $Z$ and $W$ from the hypothesis by composing $(X,Z)\\perp\\!\\!\\perp(Y,W)$ with the two second projections, so that by `indepFun_iff_map_prod_eq_prod_map_map` the law $(Z,W)_*\\mu$ is the product $\\mu_Z\\otimes\\mu_W$. Rewriting backwards with this identity replaces the product measure in the goal by the single measure $(Z,W)_*\\mu$.",
+              "grounded": true
+            },
+            {
+              "start_line": 742,
+              "end_line": 746,
+              "explanation": "Apply `Kernel.entropy_congr`, which says that two kernels have the same kernel entropy as soon as they agree almost everywhere: it suffices that the pushforward of the product kernel by $(z,w,x,y)\\mapsto x-y$ equals $\\mathrm{condDistrib}(X-Y,\\langle Z,W\\rangle)$ almost everywhere under $(Z,W)_*\\mu$. Then use `condDistrib_comp` (the conditional law of $(X,Y)$ given $(Z,W)$, pushed forward by the subtraction map, is the conditional law of $X-Y$ given $(Z,W)$, almost everywhere; the measurability side conditions are automatic). Composing with the goal by transitivity, what is left to prove is that pushing the product kernel forward by subtraction equals pushing $\\mathrm{condDistrib}((X,Y),(Z,W))$ forward by subtraction.",
+              "grounded": true
+            },
+            {
+              "start_line": 747,
+              "end_line": 751,
+              "explanation": "Since the same measurable subtraction map is applied on both sides, it suffices to prove the corresponding kernel identity without it: the product of $\\mathrm{condDistrib}(X,Z)$ (extended by a dummy index over $T$) with $\\mathrm{condDistrib}(Y,W)$ (extended by a dummy index over $S$) coincides almost everywhere under $(Z,W)_*\\mu$ with $\\mathrm{condDistrib}((X,Y),(Z,W))$. From that, `filter_upwards` and two applications of `Kernel.map_apply` (with measurability of the subtraction supplied automatically) reduce the goal, point by point, to applying the subtraction to two equal kernel values.",
+              "grounded": true
+            },
+            {
+              "start_line": 752,
+              "end_line": 752,
+              "explanation": "The remaining kernel identity is exactly `condDistrib_eq_prod_of_indepFun`: if $(X,Z)$ and $(Y,W)$ are independent, then the conditional law of $(X,Y)$ given $(Z,W)$ is almost everywhere the product of the conditional laws of $X$ given $Z$ and of $Y$ given $W$. Its symmetry gives the required orientation.",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "H[X | Z ; μ]",
+              "latex": "H[X \\mid Z;\\mu]",
+              "meaning": "conditional Shannon entropy of X given Z under μ"
+            },
+            {
+              "lean": "d[X | Z ; μ # Y | W ; μ]",
+              "latex": "d[X \\mid Z;\\mu \\# Y \\mid W;\\mu]",
+              "meaning": "conditional Ruzsa distance between the laws of X given Z and of Y given W"
+            },
+            {
+              "lean": "Hk[κ , μ]",
+              "latex": "H_k[\\kappa,\\mu]",
+              "meaning": "kernel entropy of the kernel κ integrated against the measure μ"
+            }
+          ]
+        },
+        {
+          "name": "condRuzsaDist'_of_indep",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group with measurable singletons, $T$ a countable measurable space with measurable singletons, and $\\Omega$ a measurable space. Let $X, Y : \\Omega \\to G$ and $W : \\Omega \\to T$ be measurable, let $\\mu$ be a probability measure on $\\Omega$, suppose $W$ has finite range, and suppose $X$ is independent of the pair $(Y,W)$ under $\\mu$. Then the conditional Ruzsa distance satisfies \\[ d[X;\\mu \\# Y \\mid W;\\mu] = H[X - Y \\mid W;\\mu] - \\tfrac12 H[X;\\mu] - \\tfrac12 H[Y \\mid W;\\mu]. \\]",
+          "summary": "The proof converts the conditional Ruzsa distance into a kernel-entropy expression and cancels the two entropy terms common to both sides, reducing the claim to the statement that the entropy of the difference kernel built from $X$ and the conditional law of $Y$ given $W$ equals the entropy of the conditional law of $X-Y$ given $W$. The bridge is a dummy constant variable $Z$: since $X$ is independent of $(Y,W)$, the pair $(X,Z)$ is independent of $(Y,W)$, so the conditional law of $(X,Y)$ given $(Z,W)$ factorises as a product of the laws of $X$ and of $Y$ given $W$; composing with subtraction and using the functoriality of conditional distributions turns this into the conditional law of $X-Y$ given $(Z,W)$, and finally the deterministic coordinate $Z$ is discarded, both from the kernel and from the conditioning measure, using that adjoining a one-point coordinate preserves entropy.",
+          "steps": [
+            {
+              "start_line": 761,
+              "end_line": 765,
+              "explanation": "Rewrite the conditional Ruzsa distance by its definition (`condRuzsaDist'_def`), convert the resulting kernel Ruzsa distance into an entropy expression with `Kernel.rdist_eq'`, and convert the three entropies into kernel entropies using `condEntropy_eq_kernel_entropy` (for $X-Y$ given $W$, and for $Y$ given $W$) and `entropy_eq_kernel_entropy` (for $X$). The side condition $\\mathrm{Measurable}(X-Y)$ needed by the conditional entropy rewriting is discharged by $h_X - h_Y$. Both sides then carry the same two subtrahends $-\\tfrac12 H_k[\\kappa_X, \\delta_0]$ and $-\\tfrac12 H_k[\\mathrm{condDistrib}\\,Y\\,W\\,\\mu, W_*\\mu]$, where $\\kappa_X$ is the constant kernel with value $X_*\\mu$; cancelling them leaves the single identity \\[ H_k\\big[\\big(\\mathrm{prodMkRight}\\,(\\kappa_X) \\times_k \\mathrm{prodMkLeft}\\,(\\mathrm{condDistrib}\\,Y\\,W\\,\\mu)\\big).\\mathrm{map}(x \\mapsto x_1 - x_2),\\ \\delta_0 \\otimes W_*\\mu\\big] = H_k[\\mathrm{condDistrib}\\,(X-Y)\\,W\\,\\mu,\\ W_*\\mu]. \\] (Here $\\delta_0$ is the Dirac mass at the unique point of the one-point space.)",
+              "grounded": true
+            },
+            {
+              "start_line": 766,
+              "end_line": 767,
+              "explanation": "Introduce a constant random variable $Z : \\Omega \\to \\{\\ast\\}$, $Z \\equiv \\ast$, purely as a device to make the product structure available. Using `condDistrib_unit_right` (which says that conditioning $X$ on the constant variable gives the constant kernel with value $X_*\\mu$), the kernel $\\kappa_X$ in the goal is replaced by $\\mathrm{condDistrib}\\,X\\,Z\\,\\mu$.",
+              "grounded": true
+            },
+            {
+              "start_line": 768,
+              "end_line": 774,
+              "explanation": "Show that $(X,Z)$ is independent of $(Y,W)$ under $\\mu$. The criterion `indepFun_iff_measure_inter_preimage_eq_mul` reduces this to the product formula for measurable rectangles; since $Z$ is constant, the preimage $(X,Z)^{-1}s$ equals $X^{-1}((c \\mapsto (c,\\ast))^{-1}s)$, whose test set is measurable because the second coordinate is tied to the single point $\\ast$. The independence hypothesis $h$ for $X$ and $(Y,W)$ then gives the required product identity.",
+              "grounded": true
+            },
+            {
+              "start_line": 775,
+              "end_line": 781,
+              "explanation": "Apply `condDistrib_eq_prod_of_indepFun` to the pair just shown independent: the conditional law of $(X,Y)$ given $(Z,W)$ is a.e. the product of $\\mathrm{condDistrib}\\,X\\,Z\\,\\mu$ (placed on the right factor) and $\\mathrm{condDistrib}\\,Y\\,W\\,\\mu$ (placed on the left factor). Separately compute the law of the conditioning variable: $\\mu \\circ (Z,W)^{-1} = \\delta_0 \\otimes W_*\\mu$, checked on measurable sets by unwinding the two map operations and the Dirac integral. The goal is then rewritten so that it is integrated against $\\mu \\circ (Z,W)^{-1}$ rather than $\\delta_0 \\otimes W_*\\mu$.",
+              "grounded": true
+            },
+            {
+              "start_line": 782,
+              "end_line": 789,
+              "explanation": "Compare the two kernels after composition with the subtraction map. At an a.e. point $y$ of $\\mu \\circ (Z,W)^{-1}$ — namely one where the a.e. equality of the previous step holds — applying the product kernel and then subtracting coincides with applying $\\mathrm{condDistrib}\\,(X,Y)\\,(Z,W)\\,\\mu$ and then subtracting; this is a pointwise computation of a kernel mapped through $x \\mapsto x_1 - x_2$. Since the two kernels agree a.e., `Kernel.entropy_congr` lets the left-hand kernel entropy be replaced by that of $\\mathrm{condDistrib}\\,(X,Y)\\,(Z,W)\\,\\mu$ composed with subtraction.",
+              "grounded": true
+            },
+            {
+              "start_line": 790,
+              "end_line": 793,
+              "explanation": "Identify the composed conditional law: by `condDistrib_comp`, pushing $\\mathrm{condDistrib}\\,(X,Y)\\,(Z,W)\\,\\mu$ forward along $(x,y) \\mapsto x - y$ gives $\\mathrm{condDistrib}\\,(X-Y)\\,(Z,W)\\,\\mu$ (the measurability side conditions are all automatic). Another application of `Kernel.entropy_congr` rewrites the goal accordingly.",
+              "grounded": true
+            },
+            {
+              "start_line": 794,
+              "end_line": 797,
+              "explanation": "Record the second description of the conditioning law, $\\mu \\circ (Z,W)^{-1} = (W_*\\mu) \\circ (\\mathrm{pt} \\mapsto (\\mathrm{pt},\\cdot))^{-1}$, again verified on measurable sets using the earlier formula for $\\mu \\circ (Z,W)^{-1}$ and the Dirac integral. This prepares for removing the dummy variable $Z$ at the end.",
+              "grounded": true
+            },
+            {
+              "start_line": 798,
+              "end_line": 815,
+              "explanation": "Show that $\\mathrm{condDistrib}\\,(X-Y)\\,(Z,W)\\,\\mu$ agrees a.e. with the kernel $\\mathrm{prodMkLeft}\\,(\\mathrm{condDistrib}\\,(X-Y)\\,W\\,\\mu)$ that ignores $Z$. Because the target $\\{\\ast\\} \\times T$ is countable, a.e. equality reduces to pointwise equality at every $x$ carrying nonzero mass under $\\mu \\circ (Z,W)^{-1}$. For such an $x = (\\ast, t)$ and a measurable $s \\subseteq G$, both sides evaluated at $s$ are computed by `condDistrib_apply'` as $(\\mu(A))^{-1}\\mu(A \\cap (X-Y)^{-1}s)$ with $A = (a \\mapsto (\\ast, W a))^{-1}\\{x\\}$; the set $A$ is identified with $W^{-1}\\{t\\}$, the nonzero-mass hypothesis is transported across that identity, and the two resulting expressions are literally the same, so they agree by reflexivity of the common formula (the remaining side condition $\\mathrm{Measurable}(X-Y)$ is again $h_X - h_Y$).",
+              "grounded": true
+            },
+            {
+              "start_line": 816,
+              "end_line": 816,
+              "explanation": "Assemble the result: replace the kernel $\\mathrm{condDistrib}\\,(X-Y)\\,(Z,W)\\,\\mu$ by $\\mathrm{prodMkLeft}\\,(\\mathrm{condDistrib}\\,(X-Y)\\,W\\,\\mu)$ using `Kernel.entropy_congr` and the a.e. equality just proved, replace the measure $\\mu \\circ (Z,W)^{-1}$ by $(W_*\\mu) \\circ (\\mathrm{pt} \\mapsto (\\mathrm{pt},\\cdot))^{-1}$, and invoke `Kernel.entropy_prodMkLeft_unit`, which says that adjoining a deterministic one-point coordinate does not change kernel entropy. The goal becomes exactly the identity left after the cancellation in the first step.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        }
+      ]
+    },
+    {
+      "name": "kaimanovich_vershik",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "Both statements express the Kaimanovich-Vershik entropy inequality H[X + Y + Z] - H[X + Y] <= H[Y + Z] - H[Y] for three jointly independent random variables taking values in an additive (hence abelian) group G. The extra conditions in the candidate—that G is countable with measurable singletons, and that X, Y, Z are measurable with finite range on a measure space (which joint independence forces to be a probability space)—are standard formalization hypotheses required to define discrete Shannon entropy in Lean.",
+      "reference_steps": [
+        {
+          "step": "Apply submodularity of entropy to obtain H[X, X + Y + Z] + H[Z, X + Y + Z] >= H[X, Z, X + Y + Z] + H[X + Y + Z].",
+          "evidence": "Step 2 applies `entropy_triple_add_entropy_le` to X, Z, and X + (Y + Z), giving H[<X, <Z, X + (Y + Z)>>] + H[X + (Y + Z)] <= H[<X, X + (Y + Z)>] + H[<Z, X + (Y + Z)>].",
+          "covered": "yes"
+        },
+        {
+          "step": "Rewrite H[X, X + Y + Z] = H[X, Y + Z] = H[X] + H[Y + Z] using invariance of entropy under shear/addition and independence.",
+          "evidence": "Step 5 uses `entropy_add_right` to get H[<X, X + (Y + Z)>] = H[<X, Y + Z>] and `IndepFun.entropy_pair_eq_add` (from joint independence) to get H[X] + H[Y + Z].",
+          "covered": "yes"
+        },
+        {
+          "step": "Rewrite H[Z, X + Y + Z] = H[Z, X + Y] = H[Z] + H[X + Y] using invariance of entropy under shear/addition and independence.",
+          "evidence": "Step 6 uses associativity, `entropy_add_right'` to get H[<Z, (X + Y) + Z>] = H[<Z, X + Y>], and `IndepFun.entropy_pair_eq_add` to get H[Z] + H[X + Y].",
+          "covered": "yes"
+        },
+        {
+          "step": "Rewrite H[X, Z, X + Y + Z] = H[X, Y, Z] = H[X] + H[Y] + H[Z] using bijective relabeling and independence.",
+          "evidence": "Step 3 uses `IndepFun.entropy_pair_eq_add` twice to equate H[X] + H[Y] + H[Z] with H[<<X, Y>, Z>], and `entropy_of_comp_eq_of_comp` via the bijection ((x, y), z) |-> (x, z, x + y + z) to equate this with H[<X, <Z, X + (Y + Z)>>].",
+          "covered": "yes"
+        },
+        {
+          "step": "Deduce the target difference inequality by linear arithmetic (cancelling H[X] and H[Z]).",
+          "evidence": "Step 1 reduces the target difference inequality to the linear inequality (H[X] + H[Y] + H[Z]) + H[X + Y + Z] <= (H[X] + H[Y + Z]) + (H[Z] + H[X + Y]) via linear arithmetic, and Steps 2-6 match each term.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "kaimanovich_vershik",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group whose points are measurable, let $\\Omega$ be a measurable space with a measure $\\mu$, and let $X,Y,Z:\\Omega\\to G$ be jointly independent measurable maps with finite range (joint independence forces $\\mu$ to be a probability measure). Then\\[H[X+Y+Z;\\mu]-H[X+Y;\\mu]\\;\\le\\;H[Y+Z;\\mu]-H[Y;\\mu].\\]",
+          "summary": "Following Kaimanovich–Vershik, the difference inequality is first linearised into the equivalent inequality $(H[X]+H[Y]+H[Z])+H[X+Y+Z]\\le(H[X]+H[Y+Z])+(H[Z]+H[X+Y])$. The triple entropy inequality (`entropy_triple_add_entropy_le`), applied to $X$, $Z$ and $X+(Y+Z)$, reduces this to four entropy identities. Three of them are obtained from pairwise independence via the additivity of entropy for independent pairs: $H[X]+H[Y]=H[\\langle X,Y\\rangle]$, $H[\\langle X,Y\\rangle]+H[Z]=H[\\langle\\langle X,Y\\rangle,Z\\rangle]$, $H[X]+H[Y+Z]=H[\\langle X,Y+Z\\rangle]$ and $H[Z]+H[X+Y]=H[\\langle Z,X+Y\\rangle]$, combined with the invariance of entropy under the shear operations $(x,w)\\mapsto(x,x+w)$ and $(z,w)\\mapsto(z,w+z)$. The remaining identity, identifying $H[\\langle\\langle X,Y\\rangle,Z\\rangle]$ with $H[\\langle X,\\langle Z,X+(Y+Z)\\rangle\\rangle]$, is the bijection $((x,y),z)\\mapsto(x,z,x+y+z)$ of the ranges, whose inverse is $(a,b,c)\\mapsto((a,c-a-b),b)$; this is where the group structure enters.",
+          "steps": [
+            {
+              "start_line": 1109,
+              "end_line": 1111,
+              "explanation": "Record that joint independence makes $\\mu$ a probability measure, and reduce the claim to the equivalent linear inequality\\[(H[X;\\mu]+H[Y;\\mu]+H[Z;\\mu])+H[X+Y+Z;\\mu]\\;\\le\\;(H[X;\\mu]+H[Y+Z;\\mu])+(H[Z;\\mu]+H[X+Y;\\mu]),\\]which is what the rest of the proof establishes; the passage between the two is pure linear arithmetic in the four entropies appearing.",
+              "grounded": true
+            },
+            {
+              "start_line": 1112,
+              "end_line": 1114,
+              "explanation": "Note that each of the three functions $X,Y,Z$, viewed as the coordinates of the triple, is measurable (checked coordinate by coordinate). Then apply the triple entropy inequality `entropy_triple_add_entropy_le` to $\\mu$, the functions $X$, $Z$ and $X+(Y+Z)$ (measurable since $X,Y,Z$ are), which states\\[H[\\langle X,\\langle Z,X+(Y+Z)\\rangle\\rangle;\\mu]+H[X+(Y+Z);\\mu]\\;\\le\\;H[\\langle X,X+(Y+Z)\\rangle;\\mu]+H[\\langle Z,X+(Y+Z)\\rangle;\\mu],\\]and convert it into the target inequality. Matching the two sides leaves four entropy identities to be proved, one for each of the four blocks of the reduced inequality: $H[X;\\mu]+H[Y;\\mu]+H[Z;\\mu]$, $H[X+Y+Z;\\mu]$, $H[X;\\mu]+H[Y+Z;\\mu]$ and $H[Z;\\mu]+H[X+Y;\\mu]$.",
+              "grounded": true
+            },
+            {
+              "start_line": 1115,
+              "end_line": 1125,
+              "explanation": "Establish the first block: $H[X;\\mu]+H[Y;\\mu]+H[Z;\\mu]=H[\\langle X,\\langle Z,X+(Y+Z)\\rangle\\rangle;\\mu]$, by a chain of three identities. First, $X$ and $Y$ are independent, so `IndepFun.entropy_pair_eq_add` gives $H[X;\\mu]+H[Y;\\mu]=H[\\langle X,Y\\rangle;\\mu]$ (independence of the first two coordinates is read off from the joint independence). Second, $\\langle X,Y\\rangle$ and $Z$ are independent (independence of a pair of coordinates from the third), so the same lemma gives $H[\\langle X,Y\\rangle;\\mu]+H[Z;\\mu]=H[\\langle\\langle X,Y\\rangle,Z\\rangle;\\mu]$. Third, the map $((x,y),z)\\mapsto(x,\\,z,\\,x+y+z)$ is a bijection of the ranges with inverse $(a,b,c)\\mapsto((a,\\,c-a-b),\\,b)$, so `entropy_of_comp_eq_of_comp` (entropy depends only on the law, and bijectively transformed variables have the same entropy) gives $H[\\langle\\langle X,Y\\rangle,Z\\rangle;\\mu]=H[\\langle X,\\langle Z,X+(Y+Z)\\rangle\\rangle;\\mu]$; the two composites are verified pointwise, using associativity of addition in $G$ and the identity $x+(y+z)-x-z=y$.",
+              "grounded": true
+            },
+            {
+              "start_line": 1126,
+              "end_line": 1126,
+              "explanation": "The second block is just associativity of addition: $H[X+Y+Z;\\mu]=H[X+(Y+Z);\\mu]$.",
+              "grounded": true
+            },
+            {
+              "start_line": 1127,
+              "end_line": 1130,
+              "explanation": "Establish the third block, $H[X;\\mu]+H[Y+Z;\\mu]=H[\\langle X,X+(Y+Z)\\rangle;\\mu]$, after reversing the identity so that the pair entropy sits on the right. Use `entropy_add_right`, which states $H[\\langle X,X+W\\rangle;\\mu]=H[\\langle X,W\\rangle;\\mu]$ for $W=Y+Z$ (measurable), and then `IndepFun.entropy_pair_eq_add` for $H[\\langle X,Y+Z\\rangle;\\mu]=H[X;\\mu]+H[Y+Z;\\mu]$. The required independence of $X$ from $Y+Z$ is supplied by the joint independence of the three variables, through independence of the pair $(Y,Z)$ from $X$.",
+              "grounded": true
+            },
+            {
+              "start_line": 1131,
+              "end_line": 1134,
+              "explanation": "Establish the fourth block, $H[Z;\\mu]+H[X+Y;\\mu]=H[\\langle Z,X+(Y+Z)\\rangle;\\mu]$, rearranging associativity so that the second variable reads $(X+Y)+Z$. `entropy_add_right'`, the version $H[\\langle Z,W+Z\\rangle;\\mu]=H[\\langle Z,W\\rangle;\\mu]$, removes the added $Z$ from the second coordinate with $W=X+Y$ (measurable), and `IndepFun.entropy_pair_eq_add` then gives $H[\\langle Z,X+Y\\rangle;\\mu]=H[Z;\\mu]+H[X+Y;\\mu]$. The independence of $Z$ from $X+Y$ comes from the joint independence of the three variables, applied to the pair $(X,Y)$ and the third variable.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        }
+      ]
+    },
+    {
+      "name": "ent_bsg",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The reference states the entropic Balog-Szemerédi-Gowers inequality for G-valued random variables A and B with Z = A + B. The candidate states the exact same inequality on a probability space for measurable maps into a finite abelian group G with measurable singletons, expressing the finite sum weighted by P[Z=z] as an integral against the pushforward law Z_*μ. Since G is finite, the integral equals the sum, and the finiteness, abelianness (implied by '+' notation in additive combinatorics), and measurability assumptions are standard formalization conventions. Thus the two statements make the same mathematical claim.",
+      "reference_steps": [
+        {
+          "step": "Construct conditionally independent trials (A_1, B_1) and (A_2, B_2) of (A, B) relative to Z, coupled so that A_1 + B_1 = A_2 + B_2 = Z'.",
+          "evidence": "Steps 1-2: Apply `condIndep_copies'` to (A,B) and Z=A+B to obtain (Ω', ν), AB_1=(A_1,B_1), AB_2=(A_2,B_2), and Z' conditionally independent given Z', identically distributed with ((A,B),Z), and satisfying Z' = A_1+B_1 = A_2+B_2.",
+          "covered": "yes"
+        },
+        {
+          "step": "Rewrite the expected conditional Ruzsa distance on the left-hand side as H[A_1 - B_2 | Z'] - H[A_1 | Z']/2 - H[B_2 | Z']/2 using conditional independence of A_1 and B_2 given Z'.",
+          "evidence": "Steps 10-12: Replace the integral under μ by the integral for A_1, B_2 conditioned on Z'=z under ν via `IdentDistrib.cond`, apply `IndepFun.rdist_eq` using conditional independence of A_1 and B_2 given Z'=z, and integrate term by term to obtain H[A_1-B_2 | Z'; ν] - 1/2 H[A_1 | Z'; ν] - 1/2 H[B_2 | Z'; ν].",
+          "covered": "yes"
+        },
+        {
+          "step": "Apply submodularity of entropy: H[A_1 - B_2] + H[A_1 - B_2, A_1, B_1] ≤ H[A_1 - B_2, A_1] + H[A_1 - B_2, B_1].",
+          "evidence": "Step 6: Apply `entropy_triple_add_entropy_le` to get H[⟨A_1, ⟨B_1, A_1-B_2⟩⟩; ν] + H[A_1-B_2; ν] ≤ H[⟨A_1, A_1-B_2⟩; ν] + H[⟨B_1, A_1-B_2⟩; ν].",
+          "covered": "yes"
+        },
+        {
+          "step": "Evaluate H[A_1 - B_2, A_1, B_1] = H[A_1, B_1, A_2, B_2, Z'] = 2H[A, B] - H[Z] using mutual determination of the tuples and conditional independence.",
+          "evidence": "Step 3: Show H[⟨A_1, ⟨B_1, A_1-B_2⟩⟩; ν] = 2H[⟨A,B⟩; μ] - H[Z; μ] using mutually inverse maps onto ⟨⟨A_1,B_1⟩, ⟨⟨A_2,B_2⟩, Z'⟩⟩, `ent_of_cond_indep`, identical distributions, and removal of the redundant coordinate Z=A+B.",
+          "covered": "yes"
+        },
+        {
+          "step": "Bound H[A_1 - B_2, A_1] = H[A_1, B_2] ≤ H[A] + H[B] and H[A_1 - B_2, B_1] = H[A_2 - B_1, B_1] = H[A_2, B_1] ≤ H[A] + H[B].",
+          "evidence": "Steps 4-5: Prove H[⟨A_1, A_1-B_2⟩; ν] = H[⟨A_1, B_2⟩; ν] ≤ H[A; μ] + H[B; μ] and H[⟨B_1, A_1-B_2⟩; ν] = H[⟨A_2, B_1⟩; ν] ≤ H[A; μ] + H[B; μ] using `A_1 - B_2 = A_2 - B_1`, subadditivity, and identical distributions.",
+          "covered": "yes"
+        },
+        {
+          "step": "Combine the bounds to obtain H[A_1 - B_2] ≤ 2I[A:B] + H[Z], and deduce H[A_1 - B_2 | Z'] ≤ 2I[A:B] + H[Z] since conditioning does not increase entropy.",
+          "evidence": "Step 7: Use `condEntropy_le_entropy` to bound H[A_1-B_2 | Z'; ν] by H[A_1-B_2; ν], substitute the triple entropy value and pair bounds, and expand `mutualInfo_def` to obtain 2I[A:B; μ] + H[Z; μ].",
+          "covered": "yes"
+        },
+        {
+          "step": "Compute H[A_1 | Z'] and H[B_2 | Z'] as H[A, B] - H[Z] = H[A] + H[B] - I[A:B] - H[Z], and substitute everything into the rewritten left-hand side to obtain 3I[A:B] + 2H[Z] - H[A] - H[B].",
+          "evidence": "Steps 8, 9, and 13: Compute H[A_1 | Z'; ν] and H[B_2 | Z'; ν] via the chain rule and mutual information identity as H[A; μ] + H[B; μ] - I[A:B; μ] - H[Z; μ], and substitute into the linear combination of conditional entropies to conclude.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "ent_bsg",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $(\\Omega,\\mu)$ be a probability space, $G$ a finite abelian group equipped with a $\\sigma$-algebra whose points are measurable (in particular $G$ is countable), and let $A,B:\\Omega\\to G$ be measurable. Writing $Z=A+B$ and $Z_*\\mu$ for the law of $Z$, with $\\mu[\\,|Z=z]$ the conditional law of $\\omega$ given $Z(\\omega)=z$, one has\n$$\\int_z d\\big[A;\\mu[|Z=z]\\ \\#\\ B;\\mu[|Z=z]\\big]\\,d(Z_*\\mu)(z)\\;\\le\\;3\\,I[A:B;\\mu]+2\\,H[A+B;\\mu]-H[A;\\mu]-H[B;\\mu].$$",
+          "summary": "The proof follows the entropic BSG strategy. Replace $(A,B)$ by two conditionally independent copies $(A_1,B_1)$, $(A_2,B_2)$ on a new space, both glued to a common variable $Z'=A_1+B_1=A_2+B_2$ having the law of $A+B$. The integrated Ruzsa distance over the conditioning variable $Z$ is invariant under this replacement, and by conditional independence it equals $H[A_1-B_2\\mid Z']-\\tfrac12H[A_1\\mid Z']-\\tfrac12 H[B_2\\mid Z']$. The first term is controlled by the triple entropy inequality: $H[\\langle A_1,\\langle B_1,A_1-B_2\\rangle\\rangle;\\nu]+H[A_1-B_2;\\nu]\\le H[\\langle A_1,A_1-B_2\\rangle;\\nu]+H[\\langle B_1,A_1-B_2\\rangle;\\nu]$, whose right side is at most $2H[A]+2H[B]$; conditional independence evaluates the left-side triple entropy as $2H[\\langle A,B\\rangle]-H[A+B]$, which turns the bound into $H[A_1-B_2\\mid Z']\\le 2I[A:B]+H[A+B]$. The two remaining conditional entropies are computed by the chain rule as $H[A]+H[B]-I[A:B]-H[A+B]$, and the final arithmetic yields the stated inequality.",
+          "steps": [
+            {
+              "start_line": 1161,
+              "end_line": 1165,
+              "explanation": "Put $Z=A+B$ (measurable, being a sum of two measurable maps) and apply the conditionally independent copies lemma `condIndep_copies'` to the pair $X=(A,B)$, to $Y=Z$, and to the relation $p(a,b,c)\\iff c=a+b$, which holds for every $\\omega$. It returns a probability space $(\\Omega',\\nu)$ together with maps $AB_1,AB_2:\\Omega'\\to G\\times G$ and $Z':\\Omega'\\to G$ such that: $AB_1$ and $AB_2$ are conditionally independent given $Z'$; $(AB_1,Z')$ and $(AB_2,Z')$ are each identically distributed with $((A,B),Z)$ under $\\mu$; and $Z'$ is the sum of the two coordinates of $AB_1$ and also of $AB_2$, pointwise. (Finiteness of $G$ supplies the finite-range hypotheses these lemmas need.)",
+              "grounded": true
+            },
+            {
+              "start_line": 1166,
+              "end_line": 1176,
+              "explanation": "Name the coordinates: $A_i=(AB_i)_1$, $B_i=(AB_i)_2$ for $i=1,2$. The pointwise sum relations become the identities of functions $Z'=A_1+B_1$ and $Z'=A_2+B_2$; all six maps are measurable; and projecting the identical distribution of the pairs onto the second coordinate gives that $Z'$ under $\\nu$ has the same law as $Z$ under $\\mu$.",
+              "grounded": true
+            },
+            {
+              "start_line": 1177,
+              "end_line": 1196,
+              "explanation": "First key computation: $H[\\langle A_1,\\langle B_1,A_1-B_2\\rangle\\rangle;\\nu]=2H[\\langle A,B\\rangle;\\mu]-H[Z;\\mu]$. (i) `entropy_of_comp_eq_of_comp` (two random variables that are functions of each other have equal entropy) identifies this entropy with $H[\\langle\\langle A_1,B_1\\rangle,\\langle\\langle A_2,B_2\\rangle,Z'\\rangle\\rangle;\\nu]$, via the mutually inverse maps $(a,b,c)\\mapsto((a,b),(b+c,a-c),a+b)$ and $((a,b),(c,d),e)\\mapsto(a,b,a-d)$, which are inverse on the image because $Z'=A_1+B_1=A_2+B_2$. (ii) `ent_of_cond_indep` (conditional independence given $Z'$) gives $H[\\langle\\langle A_1,B_1\\rangle,Z'\\rangle;\\nu]+H[\\langle\\langle A_2,B_2\\rangle,Z'\\rangle;\\nu]-H[Z';\\nu]$. (iii) `IdentDistrib.entropy_congr` turns both pair terms into $H[\\langle\\langle A,B\\rangle,Z\\rangle;\\mu]$ and the last term into $H[Z;\\mu]$. (iv) `entropy_prod_comp` removes the redundant coordinate $Z=A+B$, giving $H[\\langle\\langle A,B\\rangle,Z\\rangle;\\mu]=H[\\langle A,B\\rangle;\\mu]$.",
+              "grounded": true
+            },
+            {
+              "start_line": 1197,
+              "end_line": 1205,
+              "explanation": "Second estimate: $H[\\langle A_1,A_1-B_2\\rangle;\\nu]\\le H[A;\\mu]+H[B;\\mu]$. Indeed `entropy_sub_right` gives $H[\\langle A_1,A_1-B_2\\rangle;\\nu]=H[\\langle A_1,B_2\\rangle;\\nu]$, subadditivity `entropy_pair_le_add` bounds that by $H[A_1;\\nu]+H[B_2;\\nu]$, and the identical distributions of $(AB_1,Z')$ and $(AB_2,Z')$ with $((A,B),Z)$ give $H[A_1;\\nu]=H[A;\\mu]$ and $H[B_2;\\nu]=H[B;\\mu]$.",
+              "grounded": true
+            },
+            {
+              "start_line": 1206,
+              "end_line": 1216,
+              "explanation": "Third estimate, the same bound for the other pair: $H[\\langle B_1,A_1-B_2\\rangle;\\nu]\\le H[A;\\mu]+H[B;\\mu]$. Symmetry of entropy gives $H[\\langle A_1-B_2,B_1\\rangle;\\nu]$, then `entropy_sub_left'` (invariance of entropy under replacing a coordinate $X$ by $X-Y$ when $Y$ is kept) identifies it with $H[\\langle A_2,B_1\\rangle;\\nu]$ once one uses $A_1-B_2=A_2-B_1$, which is exactly $A_1+B_1=A_2+B_2$. Subadditivity followed by the identical-distribution congruences gives the claim.",
+              "grounded": true
+            },
+            {
+              "start_line": 1217,
+              "end_line": 1220,
+              "explanation": "Combine the last two estimates through the entropy version of the triple inequality `entropy_triple_add_entropy_le`, which gives $H[\\langle A_1,\\langle B_1,A_1-B_2\\rangle\\rangle;\\nu]+H[A_1-B_2;\\nu]\\le H[\\langle A_1,A_1-B_2\\rangle;\\nu]+H[\\langle B_1,A_1-B_2\\rangle;\\nu]$. Adding the two bounds yields $H[\\langle A_1,\\langle B_1,A_1-B_2\\rangle\\rangle;\\nu]+H[A_1-B_2;\\nu]\\le 2H[A;\\mu]+2H[B;\\mu]$.",
+              "grounded": true
+            },
+            {
+              "start_line": 1221,
+              "end_line": 1227,
+              "explanation": "Bound the conditional entropy of the difference: $H[A_1-B_2\\mid Z';\\nu]\\le 2I[A:B;\\mu]+H[Z;\\mu]$. Conditioning cannot increase entropy (`condEntropy_le_entropy`), so it suffices to bound $H[A_1-B_2;\\nu]$, which the previous step controls by $2H[A;\\mu]+2H[B;\\mu]-H[\\langle A_1,\\langle B_1,A_1-B_2\\rangle\\rangle;\\nu]$. Substituting the value computed in the first computation and expanding the mutual information (`mutualInfo_def`) makes this equal to $2I[A:B;\\mu]+H[Z;\\mu]$ by algebra.",
+              "grounded": true
+            },
+            {
+              "start_line": 1228,
+              "end_line": 1238,
+              "explanation": "Compute the conditional entropy of $A_1$ given $Z'$: $H[A_1\\mid Z';\\nu]=H[A;\\mu]+H[B;\\mu]-I[A:B;\\mu]-H[Z;\\mu]$. The chain rule `chain_rule''` gives $H[\\langle A_1,Z'\\rangle;\\nu]-H[Z';\\nu]$; since $Z'=A_1+B_1$, adding the redundant coordinate $B_1$ does not change the entropy, so this is $H[\\langle A_1,B_1\\rangle;\\nu]-H[Z';\\nu]$; identical distributions replace it by $H[\\langle A,B\\rangle;\\mu]-H[Z;\\mu]$; and `entropy_add_entropy_sub_mutualInfo` rewrites the latter as $H[A;\\mu]+H[B;\\mu]-I[A:B;\\mu]-H[Z;\\mu]$.",
+              "grounded": true
+            },
+            {
+              "start_line": 1239,
+              "end_line": 1249,
+              "explanation": "The same computation for $B_2$: $H[B_2\\mid Z';\\nu]=H[A;\\mu]+H[B;\\mu]-I[A:B;\\mu]-H[Z;\\mu]$. Here the chain rule is applied to $\\langle B_2,Z'\\rangle$ and $Z'=A_2+B_2$ is handled by the variant that adds a coordinate on the left, followed again by symmetry of entropy, identical distributions, and the mutual-information identity.",
+              "grounded": true
+            },
+            {
+              "start_line": 1250,
+              "end_line": 1262,
+              "explanation": "Rewrite the left-hand side: $\\int d[A;\\mu[|Z=z]\\#B;\\mu[|Z=z]]\\,d(Z_*\\mu)=\\int d[A_1;\\nu[|Z'=z]\\#B_2;\\nu[|Z'=z]]\\,d(Z'_*\\nu)$. Since $Z'$ and $Z$ are identically distributed their laws coincide, so the two integrals are over the same measure; then, pointwise in $z$, the conditional laws match: applying the conditional identical-distribution lemma `IdentDistrib.cond` to the joint identical distributions of $(A_1,Z')$ with $(A,Z)$ and of $(B_2,Z')$ with $(B,Z)$, conditioned on $Z'=z$ (a measurable singleton), gives that $A_1$ under $\\nu[|Z'=z]$ is distributed as $A$ under $\\mu[|Z=z]$, and $B_2$ as $B$. Hence each of the three entropy terms in the unfolded definition of the Ruzsa distance agrees.",
+              "grounded": true
+            },
+            {
+              "start_line": 1263,
+              "end_line": 1268,
+              "explanation": "Inside the integral, use that conditional independence passes to the projected variables: for $z$ with $AB_1$ and $AB_2$ independent under $\\nu[|Z'=z]$, the variables $A_1$ and $B_2$ are independent under $\\nu[|Z'=z]$, so the identity `IndepFun.rdist_eq` expresses the Ruzsa distance of their laws as $H[A_1-B_2;\\nu[|Z'=z]]-\\tfrac12H[A_1;\\nu[|Z'=z]]-\\tfrac12H[B_2;\\nu[|Z'=z]]$.",
+              "grounded": true
+            },
+            {
+              "start_line": 1269,
+              "end_line": 1272,
+              "explanation": "Integrate term by term (linearity of the integral for sums and scalar multiples) and recognise the three integrals as the conditional entropies $H[A_1-B_2\\mid Z';\\nu]$, $H[A_1\\mid Z';\\nu]$, $H[B_2\\mid Z';\\nu]$ by definition of conditional entropy; the integrability side conditions are automatic because $G$ is finite.",
+              "grounded": true
+            },
+            {
+              "start_line": 1273,
+              "end_line": 1275,
+              "explanation": "Apply the bound $H[A_1-B_2\\mid Z';\\nu]\\le 2I[A:B;\\mu]+H[Z;\\mu]$ to the first term (monotonicity of subtraction), then substitute the two conditional-entropy formulas. The resulting expression is $2I+H[Z]-\\tfrac12(H[A]+H[B]-I-H[Z])-\\tfrac12(H[A]+H[B]-I-H[Z])=3I+2H[Z]-H[A]-H[B]$, and $H[Z]=H[A+B]$; the final identity is pure algebra.",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "Z",
+              "latex": "Z",
+              "meaning": "the sum random variable $Z=A+B$"
+            },
+            {
+              "lean": "Z'",
+              "latex": "Z'",
+              "meaning": "the common sum variable on the auxiliary space, with $Z'=A_1+B_1=A_2+B_2$ and the law of $Z$"
+            },
+            {
+              "lean": "ν",
+              "latex": "\\nu",
+              "meaning": "the probability measure on the auxiliary space $\\Omega'$ carrying the conditionally independent copies"
+            },
+            {
+              "lean": "Ω'",
+              "latex": "\\Omega'",
+              "meaning": "the auxiliary probability space on which the conditionally independent copies live"
+            },
+            {
+              "lean": "A₁",
+              "latex": "A_1",
+              "meaning": "first coordinate of the first copy of $(A,B)$"
+            },
+            {
+              "lean": "B₁",
+              "latex": "B_1",
+              "meaning": "second coordinate of the first copy of $(A,B)$"
+            },
+            {
+              "lean": "A₂",
+              "latex": "A_2",
+              "meaning": "first coordinate of the second copy of $(A,B)$"
+            },
+            {
+              "lean": "B₂",
+              "latex": "B_2",
+              "meaning": "second coordinate of the second copy of $(A,B)$"
+            },
+            {
+              "lean": "I[A : B ; μ]",
+              "latex": "I[A:B;\\mu]",
+              "meaning": "mutual information between $A$ and $B$ under $\\mu$"
+            },
+            {
+              "lean": "μ[|Z ← z]",
+              "latex": "\\mu[\\,|Z=z]",
+              "meaning": "conditional law of $\\omega$ given $Z(\\omega)=z$"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "condRuzsaDist_le + condRuzsaDist_le'",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The two parts of the candidate together state the exact two inequalities of the reference statement: `condRuzsaDist_le` gives the general bound on $d[X\\mid Z; Y\\mid W]$ and `condRuzsaDist_le'` gives the special case $d[X; Y\\mid W]$. The extra hypotheses in the candidate (countability, measurable singletons, probability measures on explicit spaces, measurability, and finite range) are standard formalization conventions.",
+      "reference_steps": [
+        {
+          "step": "Take independent copies $(X', Z')$ and $(Y', W')$ of $(X, Z)$ and $(Y, W)$ and express $d[X\\mid Z; Y\\mid W] = H[X'-Y'\\mid Z', W'] - \\frac{1}{2}H[X'\\mid Z'] - \\frac{1}{2}H[Y'\\mid W']$.",
+          "evidence": "Part `condRuzsaDist_le`, Steps 1–3: `independent_copies_finiteRange` constructs independent copies $(X',Z')$ and $(Y',W')$ under $\\nu$, and `condRuzsaDist_of_copy` followed by `condRuzsaDist_of_indep` rewrites $d[X\\mid Z;\\mu\\#Y\\mid W;\\mu']$ as $H[X'-Y'\\mid \\langle Z',W'\\rangle;\\nu]-\\frac12H[X'\\mid Z';\\nu]-\\frac12H[Y'\\mid W';\\nu]$.",
+          "covered": "yes"
+        },
+        {
+          "step": "Bound $H[X'-Y'\\mid Z', W'] \\le H[X'-Y']$ using the fact that conditioning reduces entropy.",
+          "evidence": "Part `condRuzsaDist_le`, Step 5: applies `condEntropy_le_entropy` to obtain $H[X'-Y'\\mid \\langle Z',W'\\rangle;\\nu]\\le H[X'-Y';\\nu]$.",
+          "covered": "yes"
+        },
+        {
+          "step": "Identify $H[X'-Y'] - \\frac{1}{2}H[X'\\mid Z'] - \\frac{1}{2}H[Y'\\mid W']$ with $d[X; Y] + \\frac{1}{2}I[X:Z] + \\frac{1}{2}I[Y:W]$ via the definitions of Ruzsa distance and mutual information (and copy invariance).",
+          "evidence": "Part `condRuzsaDist_le`, Steps 4–5: rewrites $d[X;\\mu\\#Y;\\mu']$, $I[X:Z;\\mu]$, and $I[Y:W;\\mu']$ in terms of the copies using `IdentDistrib.rdist_congr`, `IndepFun.rdist_eq`, `IdentDistrib.mutualInfo_eq`, and `mutualInfo_eq_entropy_sub_condEntropy`, then cancels the $H[X']$ and $H[Y']$ terms.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [
+        "In `condRuzsaDist_le'`, Step 1 falsely states that it rewrites \"the unconditional distance on the right-hand side\", whereas the expression actually rewritten is $d[X;\\mu\\# Y\\mid W;\\mu']$, which is on the left-hand side and is still conditioned on $W$ (as shown by the displayed inequality at the end of that step)."
+      ],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "condRuzsaDist_le",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group whose singletons are measurable, let $S$ and $T$ be countable measurable spaces with measurable singletons, let $\\mu$ and $\\mu'$ be probability measures on measurable spaces $\\Omega$ and $\\Omega'$, and let $X:\\Omega\\to G$, $Z:\\Omega\\to S$, $Y:\\Omega'\\to G$, $W:\\Omega'\\to T$ be measurable finite-range random variables. Then\n$$d[X\\mid Z;\\mu \\# Y\\mid W;\\mu'] \\le d[X;\\mu\\#Y;\\mu'] + \\frac12 I[X:Z;\\mu] + \\frac12 I[Y:W;\\mu'].$$",
+          "summary": "The proof carries the two conditioned pairs to independent copies on a common probability space. Copy invariance preserves the conditional Ruzsa distance, and independence turns it into a difference of entropies. The ordinary Ruzsa distance and the two mutual informations are similarly rewritten as entropies of the copies. After cancellation, the desired estimate is exactly the elementary fact that conditioning reduces entropy, $H[X'-Y'\\mid \\langle Z',W'\\rangle]\\le H[X'-Y']$.",
+          "steps": [
+            {
+              "start_line": 1287,
+              "end_line": 1290,
+              "explanation": "Since $(X,Z)$ and $(Y,W)$ are measurable, and have finite range because their coordinates do, the finite-range independent-copy theorem `independent_copies_finiteRange` produces a probability measure $\\nu$ on an auxiliary space together with finite-range measurable random variables $(X',Z')$ and $(Y',W')$ on it that are independent under $\\nu$, with $(X',Z')\\sim(X,Z)$ under $(\\nu,\\mu)$ and $(Y',W')\\sim(Y,W)$ under $(\\nu,\\mu')$.",
+              "grounded": true
+            },
+            {
+              "start_line": 1291,
+              "end_line": 1305,
+              "explanation": "Define $X',Z',Y',W'$ as the first and second coordinates of these two copied pairs. Their measurability and finite range follow by composing the finite-range pair variables with coordinate projections (`instFiniteRangeComp`). Projecting the independence of the pairs gives $X'\\perp Y'$ under $\\nu$. Since $XZ'=(X',Z')$ and $YW'=(Y',W')$ by definition, the identically-distributed statements are rewritten as $(X',Z')\\sim(X,Z)$ under $(\\nu,\\mu)$ and $(Y',W')\\sim(Y,W)$ under $(\\nu,\\mu')$.",
+              "grounded": true
+            },
+            {
+              "start_line": 1306,
+              "end_line": 1307,
+              "explanation": "Use `condRuzsaDist_of_copy` (conditional Ruzsa distance is invariant under replacing each conditioning pair by an identically distributed copy) in the reverse direction to replace $d[X\\mid Z;\\mu\\#Y\\mid W;\\mu']$ by $d[X'\\mid Z';\\nu\\#Y'\\mid W';\\nu]$. Then `condRuzsaDist_of_indep` (the formula for independent pairs) gives\n$$d[X'\\mid Z';\\nu\\#Y'\\mid W';\\nu]\n= H[X'-Y'\\mid \\langle Z',W'\\rangle;\\nu]-\\frac12H[X'\\mid Z';\\nu]-\\frac12H[Y'\\mid W';\\nu].$$\nThus the left-hand side of the target is rewritten as this entropy expression.",
+              "grounded": true
+            },
+            {
+              "start_line": 1308,
+              "end_line": 1312,
+              "explanation": "Project the identically-distributed pairs to obtain $X\\sim X'$ and $Y\\sim Y'$. Rewrite the right-hand side using `IdentDistrib.rdist_congr` to replace $d[X;\\mu\\#Y;\\mu']$ by $d[X';\\nu\\#Y';\\nu]$; use `IndepFun.rdist_eq` for independent $X',Y'$ to write this as $H[X'-Y';\\nu]-\\frac12H[X';\\nu]-\\frac12H[Y';\\nu]$; use `IdentDistrib.mutualInfo_eq` to replace the mutual informations by $I[X':Z';\\nu]$ and $I[Y':W';\\nu]$; and use `mutualInfo_eq_entropy_sub_condEntropy` twice to rewrite these as $H[X';\\nu]-H[X'\\mid Z';\\nu]$ and $H[Y';\\nu]-H[Y'\\mid W';\\nu]$. The goal is now an inequality between the displayed entropy expressions.",
+              "grounded": true
+            },
+            {
+              "start_line": 1313,
+              "end_line": 1314,
+              "explanation": "Apply `condEntropy_le_entropy` to $X'-Y'$ conditioned on $\\langle Z',W'\\rangle$ under $\\nu$, giving $H[X'-Y'\\mid \\langle Z',W'\\rangle;\\nu]\\le H[X'-Y';\\nu]$; the required measurability and finite-range hypotheses are supplied by the construction. The remaining inequality is linear after the $H[X']$ and $H[Y']$ terms cancel, and `linarith` closes it from this bound, with the nonnegativity facts for $H[Z';\\nu]$ and $H[W';\\nu]$ also supplied as linear hypotheses.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        },
+        {
+          "name": "condRuzsaDist_le'",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group whose singletons are measurable, let $T$ be a countable measurable space with measurable singletons, let $\\mu$ and $\\mu'$ be probability measures on measurable spaces $\\Omega$ and $\\Omega'$, and let $X:\\Omega\\to G$, $Y:\\Omega'\\to G$ and $W:\\Omega'\\to T$ be measurable random variables with finite range. Then the conditional Ruzsa distance of the laws of $X$ and of $Y$ given $W$ satisfies $$d[X;\\mu\\# Y\\mid W;\\mu']\\le d[X;\\mu\\# Y;\\mu']+\\frac12 I[Y:W;\\mu'].$$",
+          "summary": "The conditional Ruzsa distance with conditioning on $W$ alone is obtained by inserting a trivial conditioning of $X$ on a constant $\\mathrm{Fin}\\,1$-valued variable, to which the general inequality bounding a conditional Ruzsa distance by the unconditional one plus half the conditioning informations applies; the extra term $\\frac12 I[X:\\text{const};\\mu]$ is zero because mutual information against a constant vanishes, leaving exactly the stated bound $d[X;\\mu\\# Y;\\mu']+\\frac12 I[Y:W;\\mu']$.",
+          "steps": [
+            {
+              "start_line": 1322,
+              "end_line": 1322,
+              "explanation": "Rewrite the unconditional distance on the right-hand side, backwards, using the degeneration identity `condRuzsaDist_of_const`: conditioning $X$ on the constant map $x\\mapsto 0$ with values in $\\mathrm{Fin}\\,1$ does not change the conditional Ruzsa distance, i.e. $d[X\\mid (x\\mapsto 0);\\mu\\# Y\\mid W;\\mu'] = d[X;\\mu\\# Y\\mid W;\\mu']$. (The side conditions needed for that lemma — measurability of $X$, of $Y$, of $W$, the probability-measure assumptions and finite range of $W$ — are supplied by the hypotheses.) The goal thereby becomes $$d[X\\mid (x\\mapsto 0);\\mu\\# Y\\mid W;\\mu']\\le d[X;\\mu\\# Y;\\mu']+\\frac12 I[Y:W;\\mu'].$$",
+              "grounded": true
+            },
+            {
+              "start_line": 1323,
+              "end_line": 1323,
+              "explanation": "Apply the general conditional Ruzsa triangle-type inequality `condRuzsaDist_le` with the auxiliary variable $Z$ taken to be the constant map $x\\mapsto 0$ (measurability of that constant map is discharged here). That lemma states $$d[X\\mid Z;\\mu\\# Y\\mid W;\\mu']\\le d[X;\\mu\\# Y;\\mu']+\\frac12 I[X:Z;\\mu]+\\frac12 I[Y:W;\\mu'],$$ and composing it with the previous step (refining by transitivity) leaves the goal $$d[X;\\mu\\# Y;\\mu']+\\frac12 I[X:(x\\mapsto 0);\\mu]+\\frac12 I[Y:W;\\mu']\\le d[X;\\mu\\# Y;\\mu']+\\frac12 I[Y:W;\\mu'].$$",
+              "grounded": true
+            },
+            {
+              "start_line": 1324,
+              "end_line": 1324,
+              "explanation": "Close the goal by simplification, using `mutualInfo_const`: the mutual information of $X$ with a constant random variable vanishes, $I[X:(x\\mapsto 0);\\mu]=0$. The two sides then coincide, so the inequality holds.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        }
+      ]
+    },
+    {
+      "name": "condRuzsaDist_diff_le + condRuzsaDist_diff_le' + condRuzsaDist_diff_le'' + condRuzsaDist_diff_le'''",
+      "statement_verdict": "different",
+      "statement_reasoning": "The two claims are not comparable (different). On one hand, Parts 1 and 3 of the candidate prove the first inequality in each display without assuming that the ambient abelian group G has characteristic 2, omitting a substantive hypothesis of the reference statement. On the other hand, the reference statement asserts the equalities (H[Y+Z]-H[Y])/2 = d[Y;Z]/2 + H[Z]/4 - H[Y]/4 and (H[Y+Z]-H[Z])/2 = d[Y;Z]/2 + H[Y]/4 - H[Z]/4 alongside the inequalities, whereas the four candidate statements only assert the resulting inequalities and do not state those equalities as conclusions (the extra hypotheses of countability, measurability, probability spaces, and finite range are standard formalization conventions).",
+      "reference_steps": [
+        {
+          "step": "Assume without loss of generality that X is independent of (Y, Z), expand d[X; Y+Z] - d[X; Y] in terms of entropies, and apply the Kaimanovich-Vershik inequality to obtain d[X; Y+Z] - d[X; Y] <= (H[Y+Z] - H[Y])/2.",
+          "evidence": "Part `condRuzsaDist_diff_le` does not perform this reduction or apply Kaimanovich-Vershik directly; instead, Step 1 delegates the entire inequality to the external lemma `comparison_of_ruzsa_distances`.",
+          "covered": "no"
+        },
+        {
+          "step": "Rewrite (H[Y+Z] - H[Y])/2 as d[Y; Z]/2 + H[Z]/4 - H[Y]/4 using the Ruzsa distance formula for independent variables Y, Z in characteristic 2.",
+          "evidence": "Part `condRuzsaDist_diff_le'`, Step 1 combines `condRuzsaDist_diff_le` with `entropy_sub_entropy_eq_condRuzsaDist_add` (H[Y+Z; mu'] - H[Y; mu'] = d[Y; mu' # Z; mu'] + H[Z; mu']/2 - H[Y; mu']/2) and halves term by term.",
+          "covered": "yes"
+        },
+        {
+          "step": "Compute I[Y : Y+Z] = H[Y] + H[Y+Z] - H[Y, Y+Z] = H[Y] + H[Y+Z] - H[Y, Z] = H[Y+Z] - H[Z] using the definition of mutual information, relabeling of entropy, and independence of Y and Z.",
+          "evidence": "Part `condRuzsaDist_diff_le''`, Step 1 uses the identity I[Y : Y+Z; mu'] = H[Y+Z; mu'] - H[Z; mu'] for independent Y, Z by invoking `mutualInfo_add_right`, omitting the intermediate joint-entropy derivation.",
+          "covered": "partial"
+        },
+        {
+          "step": "Apply the conditional Ruzsa distance bound d[X; Y | W] - d[X; Y] <= I[Y : W]/2 with W = Y+Z to deduce d[X; Y | Y+Z] - d[X; Y] <= (H[Y+Z] - H[Z])/2.",
+          "evidence": "Part `condRuzsaDist_diff_le''`, Step 2 applies `condRuzsaDist_le'` with conditioning variable W = Y+Z to get d[X; mu # Y | Y+Z; mu'] <= d[X; mu # Y; mu'] + I[Y : Y+Z; mu']/2 and rearranges.",
+          "covered": "yes"
+        },
+        {
+          "step": "Rewrite (H[Y+Z] - H[Z])/2 as d[Y; Z]/2 + H[Y]/4 - H[Z]/4 using the Ruzsa distance formula for independent variables Y, Z in characteristic 2.",
+          "evidence": "Part `condRuzsaDist_diff_le'''`, Step 1 combines `condRuzsaDist_diff_le''` with `entropy_sub_entropy_eq_condRuzsaDist_add` via linear arithmetic to obtain d[Y; mu' # Z; mu']/2 + H[Y; mu']/4 - H[Z; mu']/4.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 0.7,
+      "explanations": [
+        {
+          "name": "condRuzsaDist_diff_le",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group with a measurable structure whose singletons are measurable, let $\\mu$ be a probability measure on a measurable space $\\Omega$ and $\\mu'$ a probability measure on a measurable space $\\Omega'$, and let $X:\\Omega\\to G$, $Y,Z:\\Omega'\\to G$ be measurable maps with finite range. If $Y$ and $Z$ are independent under $\\mu'$, then $$d[X;\\mu \\# Y+Z;\\mu'] - d[X;\\mu \\# Y;\\mu'] \\le \\frac{H[Y+Z;\\mu'] - H[Y;\\mu']}{2}.$$",
+          "summary": "The lemma is an immediate corollary of the comparison of Ruzsa distances, which packages this inequality together with an exact formula for the entropy difference $H[Y+Z;\\mu']-H[Y;\\mu']$; only the inequality half of that conjunction is used.",
+          "steps": [
+            {
+              "start_line": 1379,
+              "end_line": 1384,
+              "explanation": "The whole proof is a single application of the project result `comparison_of_ruzsa_distances` to $\\mu$, $X$, $Y$, $Z$ and the independence hypothesis. That result returns a conjunction: the first component is exactly the inequality asserted here, and the second component is the entropy identity $H[Y+Z;\\mu'] - H[Y;\\mu'] = d[Y;\\mu' \\# Z;\\mu'] + H[Z;\\mu']/2 - H[Y;\\mu']/2$ (stated for a $\\mathbb{Z}/2$-module structure on $G$). Taking the first component, and discharging the measurability, probability-measure, countability and finite-range hypotheses from the context, yields the claim.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        },
+        {
+          "name": "condRuzsaDist_diff_le'",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group carrying a measurable space whose singletons are measurable and a module structure over $\\mathbb{Z}/2$, let $\\mu$ be a probability measure on a measurable space $\\Omega$ and $\\mu'$ a probability measure on a measurable space $\\Omega'$, and let $X:\\Omega\\to G$ and $Y,Z:\\Omega'\\to G$ be measurable maps of finite range, with $Y$ and $Z$ independent under $\\mu'$. Then\n$$d[X;\\mu \\# Y+Z;\\mu'] - d[X;\\mu \\# Y;\\mu'] \\le \\frac{d[Y;\\mu' \\# Z;\\mu']}{2} + \\frac{H[Z;\\mu']}{4} - \\frac{H[Y;\\mu']}{4}.$$",
+          "summary": "The proof is a two-line combination of two earlier results. The first bounds the difference $d[X;\\mu \\# Y+Z;\\mu'] - d[X;\\mu \\# Y;\\mu']$ by half the entropy increment $H[Y+Z;\\mu'] - H[Y;\\mu']$; the second evaluates that increment when $Y$ and $Z$ are independent, giving $d[Y;\\mu' \\# Z;\\mu'] + H[Z;\\mu']/2 - H[Y;\\mu']/2$. Halving the latter identity and inserting it into the former yields the stated inequality, so the whole argument is a single linear combination.",
+          "steps": [
+            {
+              "start_line": 1401,
+              "end_line": 1402,
+              "explanation": "Linear arithmetic combines two prior results, both applied to the same data $\\mu,\\mu',X,Y,Z,h$: the entropic Ruzsa triangle-type inequality `condRuzsaDist_diff_le`, which states\n$$d[X;\\mu \\# Y+Z;\\mu'] - d[X;\\mu \\# Y;\\mu'] \\le \\frac{H[Y+Z;\\mu'] - H[Y;\\mu']}{2},$$\nand the identity `entropy_sub_entropy_eq_condRuzsaDist_add`, which states\n$$H[Y+Z;\\mu'] - H[Y;\\mu'] = d[Y;\\mu' \\# Z;\\mu'] + \\frac{H[Z;\\mu']}{2} - \\frac{H[Y;\\mu']}{2}.$$\nSubstituting the second into the first and halving term by term gives $d[Y;\\mu' \\# Z;\\mu']/2 + H[Z;\\mu']/4 - H[Y;\\mu']/4$ as a bound, which is exactly the goal; the side conditions (measurability of $X,Y,Z$, the independence of $Y$ and $Z$, and finite range of $X,Y,Z$) are supplied to both cited results from the context.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        },
+        {
+          "name": "condRuzsaDist_diff_le''",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group with measurable singletons, let $\\mu$ be a probability measure on a measurable space $\\Omega$, let $\\mu'$ be a probability measure on a measurable space $\\Omega'$, and let $X:\\Omega\\to G$, $Y,Z:\\Omega'\\to G$ be measurable random variables with finite range. If $Y$ and $Z$ are independent under $\\mu'$, then $d[X;\\mu\\# Y\\mid Y+Z;\\mu']-d[X;\\mu\\# Y;\\mu']\\le \\frac{H[Y+Z;\\mu']-H[Z;\\mu']}{2}$.",
+          "summary": "The proof reduces the entropy gap to a mutual information term using independence of $Y$ and $Z$: $H[Y+Z;\\mu']-H[Z;\\mu']=I[Y:Y+Z;\\mu']$. The conditional Ruzsa distance bound with conditioning variable $Y+Z$ then says the conditional distance exceeds the unconditional one by at most half this mutual information, and subtracting the unconditional distance gives the claim.",
+          "steps": [
+            {
+              "start_line": 1410,
+              "end_line": 1410,
+              "explanation": "Use `mutualInfo_add_right` for the independent pair $Y,Z$ to rewrite the entropy difference on the right-hand side. Since $I[Y:Y+Z;\\mu']=H[Y+Z;\\mu']-H[Z;\\mu']$, the goal becomes $d[X;\\mu\\# Y\\mid Y+Z;\\mu']-d[X;\\mu\\# Y;\\mu']\\le \\frac12 I[Y:Y+Z;\\mu']$.",
+              "grounded": true
+            },
+            {
+              "start_line": 1411,
+              "end_line": 1411,
+              "explanation": "Apply `condRuzsaDist_le'` with conditioning variable $W=Y+Z$. It gives $d[X;\\mu\\# Y\\mid Y+Z;\\mu']\\le d[X;\\mu\\# Y;\\mu']+\\frac12 I[Y:Y+Z;\\mu']$. Then `linarith` rearranges this single inequality into the stated goal. The measurability of $Y+Z$ needed for the application is supplied by `fun_prop`; its finite range is inherited from $Y$ and $Z$.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        },
+        {
+          "name": "condRuzsaDist_diff_le'''",
+          "module": "PFR.ForMathlib.Entropy.RuzsaDist",
+          "statement": "Let $G$ be a countable abelian group with measurable singletons that is a module over $\\mathbb{Z}/2\\mathbb{Z}$, let $\\mu$ be a probability measure on a measurable space $\\Omega$ and $\\mu'$ a probability measure on a measurable space $\\Omega'$, and let $X:\\Omega\\to G$, $Y,Z:\\Omega'\\to G$ be measurable random variables with finite range. If $Y$ and $Z$ are independent under $\\mu'$, then\n$$d[X;\\mu\\# Y\\mid Y+Z;\\mu']-d[X;\\mu\\# Y;\\mu']\\le \\frac12 d[Y;\\mu'\\# Z;\\mu']+\\frac14 H[Y;\\mu']-\\frac14 H[Z;\\mu'].$$",
+          "summary": "The proof is a short derivation from two established ingredients: a conditional Ruzsa-distance bound controls the left side by half of $H[Y+Z;\\mu']-H[Z;\\mu']$, and an entropy identity expresses that entropy difference in terms of $d[Y;\\mu'\\# Z;\\mu']$ together with the entropies of $Y$ and $Z$. Linear arithmetic substitutes the identity into the bound and yields the stated inequality.",
+          "steps": [
+            {
+              "start_line": 1420,
+              "end_line": 1421,
+              "explanation": "Lean finishes in a single linear-arithmetic combination of two previously proved facts. The first, `condRuzsaDist_diff_le''`, states that\n$$d[X;\\mu\\# Y\\mid Y+Z;\\mu']-d[X;\\mu\\# Y;\\mu']\\le \\frac{H[Y+Z;\\mu']-H[Z;\\mu']}{2}.$$\nThe second, `entropy_sub_entropy_eq_condRuzsaDist_add`, states that\n$$H[Y+Z;\\mu']-H[Y;\\mu']=d[Y;\\mu'\\# Z;\\mu']+\\frac12 H[Z;\\mu']-\\frac12 H[Y;\\mu'].$$\nUsing the equality to rewrite $H[Y+Z;\\mu']$ in the first bound gives\n$$\\frac{H[Y+Z;\\mu']-H[Z;\\mu']}{2}=\\frac12 d[Y;\\mu'\\# Z;\\mu']+\\frac14 H[Y;\\mu']-\\frac14 H[Z;\\mu'],$$\nwhich is exactly the desired right-hand side. The tactic `linarith` performs this elimination and closes the goal; the cited lemmas are applied under the given measurability, finite-range, independence, and probability-measure hypotheses.",
+              "grounded": true
+            }
+          ],
+          "notation": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,478 @@
+{
+  "module": "Carleson.ForestOperator.AlmostOrthogonality",
+  "generator": "deepseek-v4-1-flash-1017-ultrafast",
+  "judge": "gemini-4-carbon",
+  "prompt_version": "6",
+  "judge_version": "2",
+  "review": true,
+  "unjudged": 0,
+  "stopped": null,
+  "summary": {
+    "results": 4,
+    "statement_equivalent": 4,
+    "mean_step_coverage": 1.0,
+    "results_with_errors": 1,
+    "grounding": 1.0
+  },
+  "results": [
+    {
+      "name": "TileStructure.Forest.adjoint_tile_support1 + TileStructure.Forest.adjoint_tile_support2",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The candidate splits the reference result into two declarations (`adjoint_tile_support1` and `adjoint_tile_support2`) corresponding directly to the two displayed identities in the blueprint. Accounting for standard formalization context (`ProofData`, explicit tile and forest parameters) and notation conventions ($f$ for $g$, $e^{i(Q(y)(y)-Q(y)(x))}$ for $e(-\\tilde{Q}(y)(x)+\\tilde{Q}(y)(y))$), the mathematical claims are identical.",
+      "reference_steps": [
+        {
+          "step": "Use $E(\\mathfrak{p}) \\subset \\mathcal{I}(\\mathfrak{p})$ and the definition of $T_{\\mathfrak{p}}^*$ to rewrite $T_{\\mathfrak{p}}^* g(x) = T_{\\mathfrak{p}}^* (\\mathbf{1}_{\\mathcal{I}(\\mathfrak{p})} g)(x)$.",
+          "evidence": "Part 1, Step 1: \"Since $E(p)\\subseteq\\mathfrak{I}(p)$ (`E_subset_𝓘`), the lemma `adjoint_eq_adjoint_indicator` ... rewrites the left-hand side, so the claim becomes $T_p^*(\\mathbf{1}_{\\mathfrak{I}(p)}f)=\\mathbf{1}_{B}\\cdot T_p^*(\\mathbf{1}_{\\mathfrak{I}(p)}f)$\".",
+          "covered": "yes"
+        },
+        {
+          "step": "Deduce that if $T_{\\mathfrak{p}}^* (\\mathbf{1}_{\\mathcal{I}(\\mathfrak{p})} g)(x) \\ne 0$, there exists $y \\in \\mathcal{I}(\\mathfrak{p})$ such that $K_{\\mathfrak{s}(\\mathfrak{p})}(y,x) \\ne 0$.",
+          "evidence": "Part 1, Step 4: \"Produce a point $y\\in\\mathfrak{I}(p)$ with $K_{\\mathfrak{s}(p)}(y,x)\\neq0$, by contraposing against the nonvanishing of $g(x)$\".",
+          "covered": "yes"
+        },
+        {
+          "step": "Apply the kernel support bound, the inclusion of $\\mathcal{I}(\\mathfrak{p})$ in a ball around $\\mathfrak{c}(\\mathfrak{p})$, and the triangle inequality to conclude $x \\in B(\\mathfrak{c}(\\mathfrak{p}), 5D^{\\mathfrak{s}(\\mathfrak{p})})$, establishing the first identity.",
+          "evidence": "Part 1, Steps 2, 3, and 5: splits on whether $g(x)$ vanishes and estimates $\\operatorname{dist}(x,\\mathfrak{c}(p))\\le\\operatorname{dist}(y,x)+\\operatorname{dist}(y,\\mathfrak{c}(p))<D^{\\mathfrak{s}(p)}/2+4D^{\\mathfrak{s}(p)}\\le 5D^{\\mathfrak{s}(p)}$.",
+          "covered": "yes"
+        },
+        {
+          "step": "Establish the second identity for $\\mathfrak{p} \\in \\mathfrak{T}(\\mathfrak{u})$ using $E(\\mathfrak{p}) \\subset \\mathcal{I}(\\mathfrak{p}) \\subset \\mathcal{I}(\\mathfrak{u})$ and $B(\\mathfrak{c}(\\mathfrak{p}), 5D^{\\mathfrak{s}(\\mathfrak{p})}) \\subset \\mathcal{I}(\\mathfrak{u})$.",
+          "evidence": "Part 2, Steps 1 and 2: uses $E(p)\\subseteq\\mathfrak{I}(p)\\subseteq\\mathfrak{I}(u)$ with `adjoint_eq_adjoint_indicator`, applies `adjoint_tile_support1`, and proves $B(\\mathfrak{c}(p),5D^{\\mathfrak{s}(p)})\\subseteq B(\\mathfrak{c}(p),8D^{\\mathfrak{s}(p)})\\subseteq\\mathfrak{I}(u)$.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [
+        "In Part 1, Step 4, the candidate states that rewriting the vanishing of the indicator $\\mathbf{1}_{\\mathfrak{I}(p)}f(y)$ to the implication $y\\in\\mathfrak{I}(p)\\Rightarrow f(y)=0$ (along with conjugation injectivity and nonvanishing of the exponential) reduces the vanishing of the integrand to the disjunction '$K_{\\mathfrak{s}(p)}(y,x)=0$ or ($y\\in\\mathfrak{I}(p)$ and $f(y)=0$)'. The second disjunct resulting from that rewrite is the implication '$y\\in\\mathfrak{I}(p)\\Rightarrow f(y)=0$', not the conjunction '$y\\in\\mathfrak{I}(p)$ and $f(y)=0$'."
+      ],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "TileStructure.Forest.adjoint_tile_support1",
+          "module": "Carleson.ForestOperator.AlmostOrthogonality",
+          "statement": "Let $X$ be a metric space carrying the doubling measure and function-distance structure of the tile structure, let $a\\in\\mathbb{N}$, $q\\in\\mathbb{R}$, let $K:X\\to X\\to\\mathbb{C}$, $\\sigma_1,\\sigma_2:X\\to\\mathbb{Z}$ and bounded measurable sets $F,G\\subseteq X$ be the data of the proof (`ProofData a q K σ₁ σ₂ F G`), and let $\\mathfrak{P}X$ be the tile structure with parameters $Q$, grid constant $D=2^{\\mathbb{c}a^2}$ (`defaultD a`, $\\mathbb{c}$ a fixed numerical constant), $\\kappa=2^{-10a}$ (`defaultκ a`), $S$ (`defaultS X`) and base point `cancelPt X`. For a tile $p\\in\\mathfrak{P}X$ write $\\mathfrak{I}(p)$ for its dyadic cube (with centre $\\mathfrak{c}(p)$ and integer scale $\\mathfrak{s}(p)$), $E(p)=\\{y\\in\\mathfrak{I}(p): Q(y)\\in\\Omega(p),\\ \\sigma_1(y)\\le\\mathfrak{s}(p)\\le\\sigma_2(y)\\}$, $K_s(x,y)=K(x,y)\\,\\psi(D^{-s}\\operatorname{dist}(x,y))$ for the cutoff $\\psi$ used in `Ks`, and $T_p^*f(x)=\\int_{E(p)}\\overline{K_{\\mathfrak{s}(p)}(y,x)}\\,e^{i(Q(y)(y)-Q(y)(x))}f(y)\\,dy$. Then for every $f:X\\to\\mathbb{C}$ the adjoint Carleson operator is supported in the ball of radius $5D^{\\mathfrak{s}(p)}$ around $\\mathfrak{c}(p)$ and only sees $f$ on $\\mathfrak{I}(p)$: $$T_p^*f=\\mathbf{1}_{B(\\mathfrak{c}(p),\\,5D^{\\mathfrak{s}(p)})}\\cdot T_p^*\\bigl(\\mathbf{1}_{\\mathfrak{I}(p)}f\\bigr).$$",
+          "summary": "The proof shows that the adjoint Carleson operator of a tile $p$ is insensitive to $f$ off the cube $\\mathfrak{I}(p)$ — because it integrates only over $E(p)\\subseteq\\mathfrak{I}(p)$ — and is supported in the ball $B(\\mathfrak{c}(p),5D^{\\mathfrak{s}(p)})$. The first fact is the lemma `adjoint_eq_adjoint_indicator`; for the second, one works pointwise: where $T_p^*(\\mathbf{1}_{\\mathfrak{I}(p)}f)$ vanishes the indicator identity is trivial, and where it does not vanish the integrand must be nonzero somewhere, which yields $y\\in\\mathfrak{I}(p)$ with $K_{\\mathfrak{s}(p)}(y,x)\\neq0$; the scale-$\\mathfrak{s}(p)$ kernel then gives $\\operatorname{dist}(y,x)\\le D^{\\mathfrak{s}(p)}/2$ while the cube $\\mathfrak{I}(p)$ sits in $B(\\mathfrak{c}(p),4D^{\\mathfrak{s}(p)})$, so $x$ is within $5D^{\\mathfrak{s}(p)}$ of $\\mathfrak{c}(p)$.",
+          "steps": [
+            {
+              "start_line": 37,
+              "end_line": 37,
+              "explanation": "Since $E(p)\\subseteq\\mathfrak{I}(p)$ (`E_subset_𝓘`), the lemma `adjoint_eq_adjoint_indicator` — which says that $E(p)\\subseteq\\mathfrak{I}(p')$ implies $T_p^*f=T_p^*(\\mathbf{1}_{\\mathfrak{I}(p')}f)$ — rewrites the left-hand side, so the claim becomes $T_p^*(\\mathbf{1}_{\\mathfrak{I}(p)}f)=\\mathbf{1}_{B}\\cdot T_p^*(\\mathbf{1}_{\\mathfrak{I}(p)}f)$ with $B=B(\\mathfrak{c}(p),5D^{\\mathfrak{s}(p)})$. Extensionality then reduces this function identity to the pointwise identity at an arbitrary $x\\in X$.",
+              "grounded": true
+            },
+            {
+              "start_line": 38,
+              "end_line": 39,
+              "explanation": "Split on whether the value $g(x):=T_p^*(\\mathbf{1}_{\\mathfrak{I}(p)}f)(x)$ vanishes. In the vanishing case the pointwise identity $g(x)=\\mathbf{1}_B(x)g(x)$ holds because a function that is zero at $x$ coincides there with any of its indicators (`Set.indicator_apply_eq_self`).",
+              "grounded": true
+            },
+            {
+              "start_line": 40,
+              "end_line": 40,
+              "explanation": "In the nonvanishing case, it suffices to prove $x\\in B$: if $x$ lies in the set, the indicator at $x$ is $1$, so $\\mathbf{1}_B(x)g(x)=g(x)$ (`Set.indicator_of_mem`), which is the goal up to symmetry. This is the only remaining point.",
+              "grounded": true
+            },
+            {
+              "start_line": 41,
+              "end_line": 47,
+              "explanation": "Produce a point $y\\in\\mathfrak{I}(p)$ with $K_{\\mathfrak{s}(p)}(y,x)\\neq0$, by contraposing against the nonvanishing of $g(x)$: assume $K_{\\mathfrak{s}(p)}(y,x)=0$ for every $y\\in\\mathfrak{I}(p)$ and show the integral vanishes. For $y\\in E(p)$, simplification of the integrand (conjugation is injective on zero, the exponential factor is never zero, and the indicator rewrites to the implication $y\\in\\mathfrak{I}(p)\\Rightarrow f(y)=0$) reduces the vanishing of $\\overline{K_{\\mathfrak{s}(p)}(y,x)}\\,e^{i(Q(y)(y)-Q(y)(x))}\\,\\mathbf{1}_{\\mathfrak{I}(p)}f(y)$ to the disjunction '$K_{\\mathfrak{s}(p)}(y,x)=0$ or ($y\\in\\mathfrak{I}(p)$ and $f(y)=0$)'; the left alternative holds because $y\\in E(p)\\subseteq\\mathfrak{I}(p)$ (`E_subset_𝓘`) and the kernel vanishes there by hypothesis. Hence the integrand vanishes on all of $E(p)$ and the integral is zero (`setIntegral_eq_zero_of_forall_eq_zero`).",
+              "grounded": true
+            },
+            {
+              "start_line": 48,
+              "end_line": 53,
+              "explanation": "Show that this $y$ forces $x$ into the ball. Membership in $B$ is rewritten as $\\operatorname{dist}(x,\\mathfrak{c}(p))<5D^{\\mathfrak{s}(p)}$, and one estimates $$\\operatorname{dist}(x,\\mathfrak{c}(p))\\le\\operatorname{dist}(y,x)+\\operatorname{dist}(y,\\mathfrak{c}(p))<D^{\\mathfrak{s}(p)}/2+4D^{\\mathfrak{s}(p)}.$$ The first term is bounded by the triangle inequality; the bound $\\operatorname{dist}(y,x)\\le D^{\\mathfrak{s}(p)}/2$ comes from $K_{\\mathfrak{s}(p)}(y,x)\\neq0$ (`dist_mem_Icc_of_Ks_ne_zero`, which puts $\\operatorname{dist}(y,x)$ in the interval $[D^{\\mathfrak{s}(p)-1}/4,\\,D^{\\mathfrak{s}(p)}/2]$; only the upper end is used), and $\\operatorname{dist}(y,\\mathfrak{c}(p))<4D^{\\mathfrak{s}(p)}$ from $y\\in\\mathfrak{I}(p)$ and the grid inclusion $\\mathfrak{I}(p)\\subseteq B(\\mathfrak{c}(p),4D^{\\mathfrak{s}(p)})$ (`GridStructure.Grid_subset_ball`). Finally $D^{\\mathfrak{s}(p)}/2+4D^{\\mathfrak{s}(p)}\\le5D^{\\mathfrak{s}(p)}$ follows by factoring out the common $D^{\\mathfrak{s}(p)}$ and checking the numerical inequality $2^{-1}+4\\le5$.",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "adjointCarleson",
+              "latex": "T_p^* f",
+              "meaning": "adjoint Carleson operator associated to the tile $p$"
+            },
+            {
+              "lean": "𝓘",
+              "latex": "\\mathfrak{I}(p)",
+              "meaning": "the dyadic cube (grid element) of the tile $p$, viewed as a subset of $X$"
+            },
+            {
+              "lean": "𝔰",
+              "latex": "\\mathfrak{s}(p)",
+              "meaning": "the integer scale of the tile $p$"
+            },
+            {
+              "lean": "𝔠",
+              "latex": "\\mathfrak{c}(p)",
+              "meaning": "the centre of the cube $\\mathfrak{I}(p)$"
+            },
+            {
+              "lean": "E",
+              "latex": "E(p)",
+              "meaning": "the set of points of $\\mathfrak{I}(p)$ whose $Q$-value lies in $\\Omega(p)$ and whose $\\sigma_1,\\sigma_2$ range contains $\\mathfrak{s}(p)$; it is the domain of integration in $T_p^*$"
+            },
+            {
+              "lean": "Ks",
+              "latex": "K_s(x,y)",
+              "meaning": "the scale-$s$ kernel $K(x,y)\\psi(D^{-s}\\operatorname{dist}(x,y))$"
+            },
+            {
+              "lean": "defaultD",
+              "latex": "D",
+              "meaning": "the grid constant $2^{\\mathbb{c}a^2}$"
+            }
+          ]
+        },
+        {
+          "name": "TileStructure.Forest.adjoint_tile_support2",
+          "module": "Carleson.ForestOperator.AlmostOrthogonality",
+          "statement": "Let $X$ be a metric space carrying the data of the proof ($a\\in\\mathbb{N}$, $q\\in\\mathbb{R}$, $K:X\\to X\\to\\mathbb{C}$, $\\sigma_1,\\sigma_2:X\\to\\mathbb{Z}$ and bounded measurable sets $F,G\\subseteq X$, i.e. a `ProofData`), and let $\\mathfrak{P}X$ be the tile structure with parameters $Q$, grid constant $D=2^{\\mathfrak{c}a^2}$ (`defaultD a`), $\\kappa=2^{-10a}$ (`defaultκ a`), $S$ (`defaultS X`) and base point `cancelPt X`. Let $t$ be a forest of tiles (a `TileStructure.Forest X n` for some $n\\in\\mathbb{N}$), let $u\\in t$, and let $p\\in\\mathfrak{T}(u)$ lie in the tree attached to $u$. Then for every $f:X\\to\\mathbb{C}$ the adjoint Carleson operator $T_p^*$ satisfies $$T_p^*f=\\mathbf{1}_{\\mathfrak{I}(u)}\\cdot T_p^*\\bigl(\\mathbf{1}_{\\mathfrak{I}(u)}f\\bigr),$$ that is, $T_p^*f$ is supported in $\\mathfrak{I}(u)$ and $T_p^*$ only sees $f$ on $\\mathfrak{I}(u)$.",
+          "summary": "The operator $T_p^*$ integrates only over $E(p)$, and $E(p)\\subseteq\\mathfrak{I}(p)\\subseteq\\mathfrak{I}(u)$ because $p$ lies in the tree attached to $u$ in the forest, so $T_p^*$ applied to $f$ and to $\\mathbf{1}_{\\mathfrak{I}(u)}f$ agree. On the other hand `adjoint_tile_support1` locates the support of $T_p^*f$ in the ball $B(\\mathfrak{c}(p),5D^{\\mathfrak{s}(p)})$, and this ball lies in $\\mathfrak{I}(u)$ by the forest nesting lemma, which places even the larger ball of radius $8D^{\\mathfrak{s}(p)}$ inside $\\mathfrak{I}(u)$. Hence the indicator of $\\mathfrak{I}(u)$ is redundant on both sides, and the two displayed operators coincide.",
+          "steps": [
+            {
+              "start_line": 59,
+              "end_line": 60,
+              "explanation": "Rewrite the identity into the equivalent statement that the support ball of $p$ lies in $\\mathfrak{I}(u)$, in four rewrites. First, the lemma `adjoint_eq_adjoint_indicator` — if $E(p)\\subseteq\\mathfrak{I}(p')$ then $T_p^*f=T_p^*(\\mathbf{1}_{\\mathfrak{I}(p')}f)$ — applied backwards with $p'=u$: the hypothesis $E(p)\\subseteq\\mathfrak{I}(u)$ is obtained by composing $E(p)\\subseteq\\mathfrak{I}(p)$ (`E_subset_𝓘`) with the set inclusion $\\mathfrak{I}(p)\\subseteq\\mathfrak{I}(u)$ furnished by `smul_four_le`, which for $p\\in\\mathfrak{T}(u)$ gives $4\\cdot p\\le 1\\cdot u$. This turns the right-hand side into $\\mathbf{1}_{\\mathfrak{I}(u)}\\cdot T_p^*f$. Second, `adjoint_tile_support1`, which states $T_p^*f=\\mathbf{1}_{B}T_p^*(\\mathbf{1}_{\\mathfrak{I}(p)}f)$ with $B=B(\\mathfrak{c}(p),5D^{\\mathfrak{s}(p)})$, is applied to both occurrences of $T_p^*f$, so both sides become indicators times $T_p^*(\\mathbf{1}_{\\mathfrak{I}(p)}f)$. Third, `indicator_indicator` combines the two indicators on the right into $\\mathbf{1}_{\\mathfrak{I}(u)\\cap B}$. Fourth, the set-theoretic lemma `right_eq_inter`, used backwards — it identifies $\\mathfrak{I}(u)\\cap B$ with $B$ once $B\\subseteq\\mathfrak{I}(u)$ is known — makes the two sides identical and leaves the single remaining goal $B\\subseteq\\mathfrak{I}(u)$.",
+              "grounded": true
+            },
+            {
+              "start_line": 61,
+              "end_line": 61,
+              "explanation": "Prove $B(\\mathfrak{c}(p),5D^{\\mathfrak{s}(p)})\\subseteq\\mathfrak{I}(u)$. Since $D^{\\mathfrak{s}(p)}>0$, the radius inequality $5D^{\\mathfrak{s}(p)}\\le 8D^{\\mathfrak{s}(p)}$ holds, so `ball_subset_ball` gives $B(\\mathfrak{c}(p),5D^{\\mathfrak{s}(p)})\\subseteq B(\\mathfrak{c}(p),8D^{\\mathfrak{s}(p)})$; `gcongr` reduces the radius inequality to $5\\le 8$, which `norm_num` closes. The forest nesting lemma `t.ball_subset hu hp` gives $B(\\mathfrak{c}(p),8D^{\\mathfrak{s}(p)})\\subseteq\\mathfrak{I}(u)$, and transitivity yields the required inclusion.",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "Metric.ball",
+              "latex": "B(x,r)",
+              "meaning": "the open ball of radius $r$ about the point $x$"
+            },
+            {
+              "lean": "TileStructure.Forest.𝔗",
+              "latex": "\\mathfrak{T}(u)",
+              "meaning": "the tree of tiles attached to the tile $u$ in the forest"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TileStructure.Forest.adjoint_tree_estimate + TileStructure.Forest.indicator_adjoint_tree_estimate",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The candidate is Equivalent to the reference statement. Together, the two Lean declarations `adjoint_tree_estimate` and `indicator_adjoint_tree_estimate` establish the exact two $L^2$ bounds stated in the blueprint. Initial parameters and ambient hypotheses (such as the metric space ProofData, explicit tile-structure parameters where $\\mathbb{c}=100$ recovers the exponents $181a^3$ and $282a^3$, extended-real norm conventions, and compact support in a proper space setting) are standard formalization conventions that do not alter the mathematical content.",
+      "reference_steps": [
+        {
+          "step": "Use the bilinear tree-density estimate and adjointness to bound $|\\int_X \\overline{\\sum_{\\mathfrak{p}\\in\\mathfrak{T}(\\mathfrak{u})} T_{\\mathfrak{p}}^* g}\\, f \\,\\mathrm{d}\\mu| \\le 2^{181a^3} \\mathrm{dens}_1(\\mathfrak{T}(\\mathfrak{u}))^{1/2} \\|g\\|_2 \\|f\\|_2$.",
+          "evidence": "Part 1, Step 5: \"Apply `adjoint_density_tree_bound1` with $f:=T^*_{\\mathfrak{T}(u)}g$: it states that for bounded compactly supported $f,g$ with $\\operatorname{supp}g\\subseteq G$ and $u\\in t$, $\\|\\int \\overline{T^*_{\\mathfrak{T}(u)}g}\\,f\\|_{\\mathrm e}\\le C_{7.3.1.1}(a)\\,\\mathrm{dens}_1(\\mathfrak{T}(u))^{1/2}\\|f\\|_2\\|g\\|_2$.\"",
+          "covered": "yes"
+        },
+        {
+          "step": "Choose $f = \\sum_{\\mathfrak{p}\\in\\mathfrak{T}(\\mathfrak{u})} T_{\\mathfrak{p}}^* g$, observe that $f$ is bounded with bounded support so $\\|f\\|_2 < \\infty$, and divide by $\\|f\\|_2$ to obtain the first bound.",
+          "evidence": "Part 1, Steps 1–3: Splits on $\\|T^*_{\\mathfrak{T}(u)}g\\|_{L^2}=0$, notes $T^*_{\\mathfrak{T}(u)}g$ is bounded and compactly supported hence has finite $L^2$-norm, and multiplies the target inequality by $\\|T^*_{\\mathfrak{T}(u)}g\\|_{L^2}$ using `ENNReal.mul_le_mul_iff_left`.",
+          "covered": "yes"
+        },
+        {
+          "step": "Prove the second bound analogously by setting $f = \\mathbf{1}_F \\sum_{\\mathfrak{p}\\in\\mathfrak{T}(\\mathfrak{u})} T_{\\mathfrak{p}}^* g$ and applying the corresponding two-density bilinear bound.",
+          "evidence": "Part 2, Steps 1–4: Sets $h:=1_F T^*_{\\mathfrak{T}(u)}g$, verifies $0 < \\|h\\|_2 < \\infty$ in the nontrivial case via bounded compact support, rewrites $h\\overline{h} = \\overline{T^*_{\\mathfrak{T}(u)}g}\\cdot h$ using $1_F\\cdot 1_F = 1_F$, and applies `adjoint_density_tree_bound2` with $f=h$.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "TileStructure.Forest.adjoint_tree_estimate",
+          "module": "Carleson.ForestOperator.AlmostOrthogonality",
+          "statement": "Let $X$ be a metric space carrying proof data $\\mathrm{ProofData}(a,q,K,\\sigma_1,\\sigma_2,F,G)$ (in particular a doubling measure $\\mathrm{vol}$, a kernel $K$, and the tile structure of the given constants), let $t$ be a forest of order $n$, let $u$ be a tile of $t$, and let $g:X\\to\\mathbb{C}$ be bounded and compactly supported with $\\operatorname{supp} g\\subseteq G$. Then the adjoint Carleson sum over the tree $\\mathfrak{T}(u)$ satisfies\n$$\\|T^*_{\\mathfrak{T}(u)}g\\|_{L^2(\\mathrm{vol})}\\;\\le\\; C_{7.3.1.1}(a)\\,\\mathrm{dens}_1\\big(\\mathfrak{T}(u)\\big)^{1/2}\\,\\|g\\|_{L^2(\\mathrm{vol})},$$\nwhere $C_{7.3.1.1}(a)=2^{(\\mathbb{c}+6+\\mathbb{c}/2+\\mathbb{c}/4)a^{3}}\\in\\mathbb{R}_{\\ge0}$ ($\\mathbb{c}$ the grid constant of $D=2^{\\mathbb{c}a^{2}}$; the blueprint value is $2^{181a^{3}}$), and $\\mathrm{dens}_1$ is the $\\mathbb{R}_{\\ge0}^{\\infty}$-valued density of a set $\\mathfrak{P}'$ of tiles,\n$$\\mathrm{dens}_1(\\mathfrak{P}')=\\sup_{p'\\in\\mathfrak{P}'}\\ \\sup_{l\\ge 2}\\ l^{-a}\\sup\\Big\\{\\tfrac{|E_2(l,p)|}{|\\mathfrak{I}(p)|}\\;:\\;p\\in\\mathrm{lowerCubes}(\\mathfrak{P}'),\\ \\mathrm{smul}_l(p')\\le \\mathrm{smul}_l(p)\\Big\\},$$\nwith the exponent $1/2$ interpreted as the real power $2^{-1}$ in $\\mathbb{R}_{\\ge0}^{\\infty}$, the whole inequality being an inequality of extended nonnegative reals (the constant $C_{7.3.1.1}(a)$ is the nonnegative real coerced into $\\mathbb{R}_{\\ge0}^{\\infty}$).",
+          "summary": "The proof reduces the $L^2$ bound for the adjoint Carleson sum to the bilinear estimate `adjoint_density_tree_bound1`. If the sum vanishes there is nothing to prove; otherwise one multiplies the desired inequality by the finite nonzero norm $\\|T^*_{\\mathfrak{T}(u)}g\\|_2$, turns the square of that norm into the extended norm of $\\int T^*g\\,\\overline{T^*g}$, and merely reorders the pointwise factors and the scalar product so that the goal matches the bilinear estimate, whose two function arguments are $T^*_{\\mathfrak{T}(u)}g$ (bounded compactly supported by the corresponding closure property) and $g$.",
+          "steps": [
+            {
+              "start_line": 136,
+              "end_line": 137,
+              "explanation": "Split on whether $\\|T^*_{\\mathfrak{T}(u)}g\\|_{L^2}=0$. In the vanishing case the left side is $0$ and the right side is a product of nonnegative extended reals, so the inequality is immediate.",
+              "grounded": true
+            },
+            {
+              "start_line": 138,
+              "end_line": 138,
+              "explanation": "Record for later use that $T^*_{\\mathfrak{T}(u)}g$ is again bounded and compactly supported, because $g$ is (`BoundedCompactSupport.adjointCarlesonSum`); this will supply the $L^2$-membership (`BoundedCompactSupport.memLp`) and hence the finiteness of its $L^2$-norm.",
+              "grounded": true
+            },
+            {
+              "start_line": 139,
+              "end_line": 141,
+              "explanation": "In the nonvanishing case, multiply both sides of the inequality by the (nonzero, finite) norm $\\|T^*_{\\mathfrak{T}(u)}g\\|_{L^2}$, using `ENNReal.mul_le_mul_iff_left` in its reverse direction (the facts that this norm is nonzero and not $\\infty$ are exactly the two side conditions). Rewrite the resulting factor $\\|T^*g\\|_2\\cdot\\|T^*g\\|_2$ as $\\|T^*g\\|_2^2$, then replace that square by the extended norm of the integral $\\int T^*g\\,\\overline{T^*g}$ via `eLpNorm_two_eq_enorm_integral_mul_conj`; finally reassociate and commute the factors on the right. The goal becomes $\\|\\int T^*g\\,\\overline{T^*g}\\|_{\\mathrm e}\\le C_{7.3.1.1}(a)\\,\\mathrm{dens}_1(\\mathfrak{T}(u))^{1/2}\\,\\|T^*g\\|_2\\,\\|g\\|_2$.",
+              "grounded": true
+            },
+            {
+              "start_line": 142,
+              "end_line": 142,
+              "explanation": "Inside the integral, swap the two pointwise factors, replacing $T^*g\\cdot\\overline{T^*g}$ by $\\overline{T^*g}\\cdot T^*g$, so that the integrand has the shape required by the estimate about to be applied.",
+              "grounded": true
+            },
+            {
+              "start_line": 143,
+              "end_line": 143,
+              "explanation": "Apply `adjoint_density_tree_bound1` with $f:=T^*_{\\mathfrak{T}(u)}g$: it states that for bounded compactly supported $f,g$ with $\\operatorname{supp}g\\subseteq G$ and $u\\in t$, $\\|\\int \\overline{T^*_{\\mathfrak{T}(u)}g}\\,f\\|_{\\mathrm e}\\le C_{7.3.1.1}(a)\\,\\mathrm{dens}_1(\\mathfrak{T}(u))^{1/2}\\|f\\|_2\\|g\\|_2$. With $f$ the adjoint sum, this is precisely the goal.",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "adjointCarlesonSum",
+              "latex": "T^*_{\\mathfrak{C}}g",
+              "meaning": "the adjoint Carleson sum over the set $\\mathfrak{C}$ of tiles, $\\sum_{p\\in\\mathfrak{C}} T_p^*g$"
+            },
+            {
+              "lean": "dens₁",
+              "latex": "\\mathrm{dens}_1",
+              "meaning": "the density of a set of tiles, valued in $\\mathbb{R}_{\\ge0}^{\\infty}$, with the formula given in the statement"
+            },
+            {
+              "lean": "C7_3_1_1",
+              "latex": "C_{7.3.1.1}(a)",
+              "meaning": "the constant $2^{(\\mathbb{c}+6+\\mathbb{c}/2+\\mathbb{c}/4)a^{3}}$"
+            },
+            {
+              "lean": "enorm",
+              "latex": "\\|z\\|_{\\mathrm e}",
+              "meaning": "the extended norm of the complex number or integral $z$, valued in $\\mathbb{R}_{\\ge0}^{\\infty}$"
+            }
+          ]
+        },
+        {
+          "name": "TileStructure.Forest.indicator_adjoint_tree_estimate",
+          "module": "Carleson.ForestOperator.AlmostOrthogonality",
+          "statement": "Let $X$ be a metric space carrying proof data $(a,q,K,\\sigma_1,\\sigma_2,F,G)$ — so $q\\in(1,2]$, $F$ and $G$ are bounded measurable sets, $X$ is equipped with the associated doubling measure, and the linearised nontangential operators have bounded strong type $(2,2)$ with constant $C_{T_s}(a)$ — together with a tile structure whose constants are $D=2^{\\mathbb{c}a^2}$, $\\kappa=2^{-10a}$, a scale bound $S$ and cancellation point $o$. Let $t$ be a forest of depth $n$, let $u$ be a tile with $u\\in t$, and let $g:X\\to\\mathbb{C}$ be bounded with compact support and $\\operatorname{supp}g\\subseteq G$. Write $\\mathfrak{T}(u)$ for the tree of tiles attached to $u$ in the forest and $T^*_{\\mathfrak{C}}g=\\sum_{p\\in\\mathfrak{C}}T_p^*g$ for the adjoint Carleson sum over a set $\\mathfrak{C}$ of tiles. Then\n$$\\big\\|1_F\\,T^*_{\\mathfrak{T}(u)}g\\big\\|_2\\;\\le\\;C_{7.3.1.2}(a)\\;\\mathrm{dens}_1(\\mathfrak{T}(u))^{1/2}\\,\\mathrm{dens}_2(\\mathfrak{T}(u))^{1/2}\\,\\|g\\|_2,$$\nwhere $C_{7.3.1.2}(a)=2^{(2\\mathbb{c}+7+\\mathbb{c}/2+\\mathbb{c}/4)a^3}$ (value $2^{282a^3}$ in the blueprint), the norms are $L^2$ extended norms over $X$, and the densities are valued in $\\mathbb{R}_{\\ge0}^{\\infty}$ with $\\mathrm{dens}_2(\\mathfrak{P}')=\\sup_{p\\in\\mathfrak{P}'}\\sup_{r\\ge 4D^{\\mathfrak{s}(p)}}\\frac{|F\\cap B(\\mathfrak{c}(p),r)|}{|B(\\mathfrak{c}(p),r)|}$ and $\\mathrm{dens}_1(\\mathfrak{P}')=\\sup_{p'\\in\\mathfrak{P}'}\\sup_{l\\ge2} l^{-a}\\sup_{p\\in\\mathrm{lowerCubes}(\\mathfrak{P}'),\\,lp'\\le lp}\\frac{|E_2(lp)|}{|\\mathfrak{I}(p)|}$.",
+          "summary": "The proof disposes of the degenerate case $\\|1_FT^*_{\\mathfrak{T}(u)}g\\|_2=0$ first. Otherwise it multiplies the desired inequality by the finite, nonzero quantity $\\|h\\|_2$ with $h=1_FT^*_{\\mathfrak{T}(u)}g$, writes $\\|h\\|_2^2$ as the extended norm of $\\int h\\overline h$, and reduces the claim to the single bilinear estimate $\\|\\int \\overline{T^*_{\\mathfrak{T}(u)}g}\\,h\\|_{\\mathrm e}\\le C_{7.3.1.2}(a)\\,\\mathrm{dens}_1^{1/2}\\mathrm{dens}_2^{1/2}\\|h\\|_2\\|g\\|_2$. The identification of the integrands is a pointwise computation using that $1_F$ is a real-valued indicator: $h\\overline h=\\overline{T^*g}\\,h$. The bilinear estimate is then applied with the admissible input $f=h$, whose support lies in $F$.",
+          "steps": [
+            {
+              "start_line": 158,
+              "end_line": 159,
+              "explanation": "Split on whether $h:=1_F T^*_{\\mathfrak{T}(u)}g$ has vanishing $L^2$ norm. If $\\|h\\|_2=0$, the left-hand side of the claim is $0$ and the right-hand side is a product of nonnegative extended reals, so the inequality holds trivially.",
+              "grounded": true
+            },
+            {
+              "start_line": 160,
+              "end_line": 164,
+              "explanation": "Now assume $\\|h\\|_2\\neq0$. First record that $h$ is bounded with compact support: $T^*_{\\mathfrak{T}(u)}g$ is, being an adjoint Carleson sum of a bounded compactly supported $g$ (`MeasureTheory.BoundedCompactSupport.adjointCarlesonSum`), and multiplying by the indicator of the measurable set $F$ preserves this (`MeasureTheory.BoundedCompactSupport.indicator`, using measurability of $F$ from the proof data). Hence $h\\in L^2$, so $\\|h\\|_2\\neq\\infty$, and one may multiply the inequality by $\\|h\\|_2$ on both sides, which is legitimate precisely because $0<\\|h\\|_2<\\infty$ (`ENNReal.mul_le_mul_iff_left`). The goal becomes $\\|h\\|_2^2\\le C_{7.3.1.2}(a)\\,\\mathrm{dens}_1^{1/2}\\mathrm{dens}_2^{1/2}\\|h\\|_2\\|g\\|_2$; the square $\\|h\\|_2^2$ is then rewritten as $\\|\\int h\\,\\overline{h}\\|_{\\mathrm e}$ by the $L^2$ identity `MeasureTheory.eLpNorm_two_eq_enorm_integral_mul_conj`, and the right-hand side is reassociated so that the two $L^2$ norms sit together.",
+              "grounded": true
+            },
+            {
+              "start_line": 165,
+              "end_line": 170,
+              "explanation": "The calculation begins by identifying the integrand pointwise: $h(x)\\,\\overline{h(x)} = \\overline{T^*_{\\mathfrak{T}(u)}g(x)}\\cdot h(x)$. Explicitly, Lean rewrites the occurrence of $h(x)$ inside the conjugate as $1_F(x)\\,T^*g(x)$; conjugation is then pushed through the product, the conjugate of the indicator $1_F$ is $1_F$ itself (it is real-valued and $\\overline{1}=1$), the factor $1_F(x)$ is reassociated and commuted so that it stands next to $h(x)$, the product $1_F(x)\\cdot h(x)$ is collapsed back to $h(x)$ using $1_F(x)\\cdot1_F(x)=1_F(x)$, and the last step is plain commutativity. This turns the left-hand side into $\\|\\int \\overline{T^*_{\\mathfrak{T}(u)}g}\\cdot h\\|_{\\mathrm e}$.",
+              "grounded": true
+            },
+            {
+              "start_line": 171,
+              "end_line": 171,
+              "explanation": "Apply the bilinear tree estimate `TileStructure.Forest.adjoint_density_tree_bound2` with $f=h$: it requires $f$ bounded with compact support with support in $F$ (satisfied, since $h$ is $1_F$ times something), $g$ bounded with compact support supported in $G$, and $u\\in t$, and it concludes exactly $\\|\\int \\overline{T^*_{\\mathfrak{T}(u)}g}\\,f\\|_{\\mathrm e}\\le C_{7.3.1.2}(a)\\,\\mathrm{dens}_1(\\mathfrak{T}(u))^{1/2}\\mathrm{dens}_2(\\mathfrak{T}(u))^{1/2}\\|f\\|_2\\|g\\|_2$, which is the current goal.",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "TileStructure.Forest.C7_3_1_2",
+              "latex": "C_{7.3.1.2}(a)",
+              "meaning": "the constant $2^{(2\\mathbb{c}+7+\\mathbb{c}/2+\\mathbb{c}/4)a^3}$ of the tree density estimates ($2^{282a^3}$ in the blueprint)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TileStructure.Forest.adjoint_tree_control",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The candidate statement matches the reference statement after accounting for standard formalization conventions in the Carleson project: ambient metric/measure-theoretic proof data (which supplies parameters like $a \\ge 4$ and bounded measurable $G$), representing $\\mathfrak{u} \\in \\mathfrak{U}$ as a tile $u$ in a forest $t$, requiring `BoundedCompactSupport` (standard for bounded functions supported on the bounded set $G$ in a proper space, plus measurability), and writing the constant as $C_{7.4.3}(a) = 2^{(\\mathbb{c} + 7 + \\mathbb{c}/2 + \\mathbb{c}/4)a^3}$, which equals $2^{182a^3}$ for the blueprint's grid constant $\\mathbb{c} = 100$.",
+      "reference_steps": [
+        {
+          "step": "Apply Minkowski's inequality ($L^2$ triangle inequality) to split $S_{2,\\mathfrak{u}}g$ into its constituent terms, bound them respectively via the adjoint tree estimate and the Hardy-Littlewood maximal inequality (along with the trivial $L^2$ bound on $g$), and combine the constants using $a \\ge 4$.",
+          "evidence": "Steps 1–2 apply the $L^2$ triangle inequality (`eLpNorm_add_le`) twice to split $S_{2,\\mathfrak{u}}f = \\|T^*_{\\mathfrak{T}(u)}f\\|_{\\mathrm{e}} + M_{\\mathfrak{B}}f + \\|f\\|_{\\mathrm{e}}$; Step 3 bounds the three pieces using `adjoint_tree_estimate`, `hasStrongType_maximalFunction_one`, and `eLpNorm_enorm`; Steps 4–5 bound the density by $1$ (`dens₁_le_one`) and conclude $C_{7.3.1.1}(a) + CMB(2^a,2) + 1 \\le C_{7.4.3}(a)$ via `le_C7_4_3` using $a \\ge 4$ (`four_le_a`).",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "TileStructure.Forest.adjoint_tree_control",
+          "module": "Carleson.ForestOperator.AlmostOrthogonality",
+          "statement": "Let $X$ be a metric space carrying proof data $(a,q,K,\\sigma_1,\\sigma_2,F,G)$ (so $a\\ge 4$, $q\\in(1,2]$, $F,G$ bounded measurable, and $\\mathrm{vol}$ is a doubling measure with the associated tile structure of constants $D=2^{\\mathbb c a^2}$, $\\kappa=2^{-10a}$, $S$ and cancellation point $o$). Let $t$ be a forest of order $n$, let $u$ be a tile with $u\\in t$, and let $f:X\\to\\mathbb{C}$ be bounded and compactly supported with $\\operatorname{supp}f\\subseteq G$. Then the adjoint boundary operator $S_{2,\\mathfrak u}f=\\|T^*_{\\mathfrak T(u)}f\\|_{\\mathrm e}+M_{\\mathfrak B}f+\\|f\\|_{\\mathrm e}$ satisfies, in $\\mathbb{R}_{\\ge0}^{\\infty}$,\n$$\\|S_{2,\\mathfrak u}f\\|_{L^2(\\mathrm{vol})}\\;\\le\\;C_{7.4.3}(a)\\,\\|f\\|_{L^2(\\mathrm{vol})},$$\nwhere $C_{7.4.3}(a)=2^{(\\mathbb c+7+\\mathbb c/2+\\mathbb c/4)a^3}\\in\\mathbb{R}_{\\ge0}$ ($2^{182a^3}$ in the blueprint, $\\mathbb c$ the grid constant).",
+          "summary": "The proof is a three-term splitting followed by a constant bookkeeping. The boundary operator is the sum of the adjoint Carleson sum over the tree, the uncentered maximal function over the ball family $\\mathfrak B$, and $|f|$ itself; two applications of the $L^2$ triangle inequality separate them. Each term is then controlled by $\\|f\\|_2$: the adjoint tree estimate gives $C_{7.3.1.1}(a)\\,\\mathrm{dens}_1(\\mathfrak T(u))^{1/2}\\|f\\|_2$, the strong $(2,2)$ bound for the maximal function gives $CMB(2^a,2)\\|f\\|_2$, and the $|f|$ term is dominated by $\\|f\\|_2$ since the extended norm has the same $L^2$ norm as $f$. Since a density is at most $1$, the coefficient is at most $C_{7.3.1.1}(a)+CMB(2^a,2)+1$, which the numerical lemma `le_C7_4_3` (using $a\\ge4$) places below $C_{7.4.3}(a)$.",
+          "steps": [
+            {
+              "start_line": 217,
+              "end_line": 219,
+              "explanation": "Unfold the boundary operator, which by definition is the extended-nonnegative-real function $\\|T^*_{\\mathfrak T(u)}f(x)\\|_{\\mathrm e}+M_{\\mathfrak B}f(x)+\\|f(x)\\|_{\\mathrm e}$, and peel off its last summand: the triangle inequality for the $L^2$ norm, `eLpNorm_add_le` with $1\\le 2$, bounds the $L^2$ norm of the whole operator by the $L^2$ norm of $\\|T^*_{\\mathfrak T(u)}f\\|_{\\mathrm e}+M_{\\mathfrak B}f$ plus the $L^2$ norm of $\\|f\\|_{\\mathrm e}$.",
+              "grounded": true
+            },
+            {
+              "start_line": 220,
+              "end_line": 223,
+              "explanation": "Apply the same triangle inequality `eLpNorm_add_le` once more to split the remaining sum into the two $L^2$ norms $\\|\\,\\|T^*_{\\mathfrak T(u)}f\\|_{\\mathrm e}\\|_2$ and $\\|M_{\\mathfrak B}f\\|_2$; `gcongr` matches the common third summand $eLpNorm(\\|f\\|_{\\mathrm e})$ on both sides and leaves exactly that triangle inequality as the only goal.",
+              "grounded": true
+            },
+            {
+              "start_line": 224,
+              "end_line": 230,
+              "explanation": "Bound the three summands separately against $\\|f\\|_2$, as three goals produced by `gcongr`. (i) Since $f$ is a.e. strongly measurable (bounded compact support gives this), hence so is its adjoint Carleson sum, `eLpNorm_enorm` replaces $\\|\\,\\|T^*_{\\mathfrak T(u)}f\\|_{\\mathrm e}\\|_2$ by $\\|T^*_{\\mathfrak T(u)}f\\|_2$, and the adjoint tree estimate `adjoint_tree_estimate` — which states $\\|T^*_{\\mathfrak T(u)}g\\|_2\\le C_{7.3.1.1}(a)\\,\\mathrm{dens}_1(\\mathfrak T(u))^{1/2}\\|g\\|_2$ for bounded compactly supported $g$ with $\\operatorname{supp}g\\subseteq G$ — gives the bound $C_{7.3.1.1}(a)\\,\\mathrm{dens}_1(\\mathfrak T(u))^{1/2}\\|f\\|_2$. (ii) The maximal function has strong type $(2,2)$ with constant $CMB(A,2)$ (`hasStrongType_maximalFunction_one`, applied with $p=2>1$ and $A=\\mathrm{defaultA}(a)=2^a$), and $f\\in L^2$ because it is bounded and compactly supported (`MeasureTheory.BoundedCompactSupport.memLp`), giving $\\|M_{\\mathfrak B}f\\|_2\\le CMB(2^a,2)\\|f\\|_2$. (iii) Since $f$ is a.e. strongly measurable, `eLpNorm_enorm` identifies $\\|\\,\\|f\\|_{\\mathrm e}\\|_2$ with $\\|f\\|_2$, and the required inequality $\\|\\,\\|f\\|_{\\mathrm e}\\|_2\\le\\|f\\|_2$ follows. This yields the bound $C_{7.3.1.1}(a)\\,\\mathrm{dens}_1(\\mathfrak T(u))^{1/2}\\|f\\|_2+CMB(2^a,2)\\|f\\|_2+\\|f\\|_2$.",
+              "grounded": true
+            },
+            {
+              "start_line": 231,
+              "end_line": 232,
+              "explanation": "Replace the density factor by $1$: the density of any set of tiles is at most $1$ (`dens₁_le_one`, i.e. $\\mathrm{dens}_1\\mathfrak P'\\le 1$), and `gcongr` reduces the claim to that single inequality after the right-hand side is expanded as a sum of three products (`add_mul`, `one_mul`). The result is the bound $(C_{7.3.1.1}(a)\\cdot 1^{1/2}+CMB(2^a,2)+1)\\|f\\|_2$.",
+              "grounded": true
+            },
+            {
+              "start_line": 233,
+              "end_line": 237,
+              "explanation": "Compare constants: `gcongr` cancels the common nonnegative factor $\\|f\\|_2$, leaving the numerical inequality $C_{7.3.1.1}(a)\\cdot 1^{1/2}+CMB(2^a,2)+1\\le C_{7.4.3}(a)$; after simplifying $1^{1/2}=1$ and the cast of $\\mathrm{defaultA}(a)=2^a$ and normalising the coercions with `norm_cast`, this is exactly `le_C7_4_3`, the numerical estimate $C_{7.3.1.1}(a)+CMB(2^a,2)+1\\le C_{7.4.3}(a)$ valid for $a\\ge4$ (which holds by `four_le_a`).",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "TileStructure.Forest.adjointBoundaryOperator",
+              "latex": "S_{2,\\mathfrak u}f",
+              "meaning": "the adjoint boundary operator $\\|T^*_{\\mathfrak T(u)}f\\|_{\\mathrm e}+M_{\\mathfrak B}f+\\|f\\|_{\\mathrm e}$"
+            },
+            {
+              "lean": "maximalFunction",
+              "latex": "M_{\\mathfrak B}f",
+              "meaning": "the uncentered Hardy–Littlewood maximal function over the ball family $\\mathfrak B$, $\\sup_{i\\in\\mathfrak B}1_{B(c_i,r_i)}(x)(\\fint_{B(c_i,r_i)}|f|^p)^{1/p}$, here at $p=1$"
+            },
+            {
+              "lean": "TileStructure.Forest.C7_4_3",
+              "latex": "C_{7.4.3}(a)",
+              "meaning": "the constant $2^{(\\mathbb c+7+\\mathbb c/2+\\mathbb c/4)a^3}$, i.e. $2^{182a^3}$ in the blueprint"
+            },
+            {
+              "lean": "TileStructure.Forest.𝓑",
+              "latex": "\\mathfrak B",
+              "meaning": "the index set $\\{0,\\dots,S+5\\}\\times\\{0,\\dots,2S+3\\}\\times\\mathrm{Grid}$ of the maximal function $M_{\\mathfrak B}$"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TileStructure.Forest.𝔗_subset_𝔖₀ + TileStructure.Forest.overlap_implies_distance",
+      "statement_verdict": "equivalent",
+      "statement_reasoning": "The reference statement has two assertions for distinct tiles u_1, u_2 in a forest with I(u_1) subset I(u_2): (1) any tile p in T(u_1) cup T(u_2) whose cube I(p) intersects I(u_1) belongs to S, and (2) in particular T(u_1) subset S. From the reference proof, membership of p in T(u_1) cup T(u_2) in S is defined by the distance bound d_p(Q(u_1), Q(u_2)) >= 2^{Zn/2} with Z = 2^{12a}. In the candidate, Part 2 (`TileStructure.Forest.overlap_implies_distance`) states assertion (1) and Part 1 (`TileStructure.Forest.𝔗_subset_𝔖₀`) states assertion (2), carrying the explicit Chapter 7 tile-structure parameters and defining S_0(t, u_1, u_2) by the exact same condition. Accounting for formalization conventions and notation (dyadic cube order <= for inclusion, non-disjointness for non-empty intersection), the combined candidate statement makes the exact same mathematical claim.",
+      "reference_steps": [
+        {
+          "step": "For p in T(u_1), use I(p) subset I(u_1) subset I(u_2), the reverse triangle inequality, the forest separation bound (>= 2^{Z(n+1)}), the tree frequency-ball bound (<= 4), and Z = 2^{12a} >= 4 to obtain d_p(Q(u_1), Q(u_2)) >= 2^{Z(n+1)} - 4 >= 2^{Zn/2}, giving p in S (and T(u_1) subset S).",
+          "evidence": "Part 2 (`overlap_implies_distance`), Steps 3 and 4 establish 2^{Z(n+1)} - 4 >= 2^{Zn/2} from 4 <= Z and apply the triangle inequality, `TileStructure.Forest.lt_dist'` (using I(p) <= I(u_1) <= I(u_2)), and `TileStructure.Forest.smul_four_le` (giving ball inclusion of radius 4) when p in T(u_1). Part 1 (`𝔗_subset_𝔖₀`), Steps 1 and 2 deduce T(u_1) subset S_0 by showing every p in T(u_1) has nonempty cube contained in I(u_1), hence meeting I(u_1).",
+          "covered": "yes"
+        },
+        {
+          "step": "For p in T(u_2) with I(p) subset I(u_1), apply the symmetric argument with u_1 and u_2 swapped to conclude p in S.",
+          "evidence": "Part 2 (`overlap_implies_distance`), Step 5 handles p in T(u_2) under the reduced hypothesis I(p) <= I(u_1) as the mirror image of Step 4, applying the triangle inequality, `TileStructure.Forest.lt_dist'` with (u, u') = (u_1, u_2), and `TileStructure.Forest.smul_four_le` for u_2.",
+          "covered": "yes"
+        },
+        {
+          "step": "When I(p) is not contained in I(u_1) (with I(p) cap I(u_1) nonempty), use the dyadic property to get I(u_1) subset I(p), pick p' in T(u_1) so that I(p') subset I(u_1) subset I(p), and apply monotonicity of cube metrics together with the bound at p' to conclude p in S.",
+          "evidence": "Part 2 (`overlap_implies_distance`), Step 2 performs this reduction via `wlog`: when I(p) is not <= I(u_1), non-disjointness and `le_or_ge_or_disjoint` yield I(u_1) <= I(p); it chooses p' in T(u_1) via `Forest.nonempty`, notes I(p') <= I(u_1) <= I(p), applies the I(p') <= I(u_1) case to p' (yielding >= 2^{Zn/2}), and transfers the lower bound to p via `Grid.dist_mono`.",
+          "covered": "yes"
+        }
+      ],
+      "errors": [],
+      "coverage": 1.0,
+      "explanations": [
+        {
+          "name": "TileStructure.Forest.𝔗_subset_𝔖₀",
+          "module": "Carleson.ForestOperator.AlmostOrthogonality",
+          "statement": "Let $X$ be a metric space carrying the standing Chapter 7 proof data: a doubling measure of constant $2^a$, a parameter $q\\in(1,2]$, a kernel $K$, measurable exponents $\\sigma_1\\le\\sigma_2$ with finite ranges, bounded measurable sets $F,G$, and the associated simple function $Q:X\\to\\Theta(X)$ with the bounded strong type property for the linearized nontangential operator. Equip $X$ with a tile structure subordinate to $Q$ with $D=2^{\\mathbb{c}a^2}$, $\\kappa=2^{-10a}$, depth constant $S$ and base point $o$ (a point at which every $\\Theta(X)$-function vanishes), so that tiles $p$ carry a dyadic cube $\\mathfrak{I}(p)$, a value $\\mathcal{Q}p$ and a tree $\\mathfrak{T}(p)$. Let $t$ be a forest of depth $n$ and let $u_1,u_2\\in t$ be distinct tiles with $\\mathfrak{I}(u_1)\\le\\mathfrak{I}(u_2)$. Then $\\mathfrak{T}(u_1)$ is contained in $\\mathfrak{S}_0(t,u_1,u_2)=\\{p\\in\\mathfrak{T}(u_1)\\cup\\mathfrak{T}(u_2):2^{Zn/2}\\le\\mathrm{dist}_{(p)}(\\mathcal{Q}u_1,\\mathcal{Q}u_2)\\}$, where $Z=2^{12a}$.",
+          "summary": "For each tile $p$ in the tree of $u_1$, the proof invokes the overlap-distance lemma, which reduces the claim to showing that the cube of $p$ meets the cube of $u_1$. Nonemptiness of grid cubes provides a point of $p$'s cube, and the forest inequality $\\mathrm{smul}(4,p)\\le\\mathrm{smul}(1,u_1)$ places that same point in $u_1$'s cube. Hence the cubes meet, and the overlap-distance lemma gives $p\\in\\mathfrak{S}_0(t,u_1,u_2)$.",
+          "steps": [
+            {
+              "start_line": 289,
+              "end_line": 290,
+              "explanation": "The inclusion is proved pointwise: fix a tile $p$ with $p\\in\\mathfrak{T}(u_1)$, so that $p$ also lies in $\\mathfrak{T}(u_1)\\cup\\mathfrak{T}(u_2)$, and the goal is $p\\in\\mathfrak{S}_0(t,u_1,u_2)$. Apply `TileStructure.Forest.overlap_implies_distance`, which states that for distinct $u_1,u_2\\in t$ with $\\mathfrak{I}(u_1)\\le\\mathfrak{I}(u_2)$, every $p\\in\\mathfrak{T}(u_1)\\cup\\mathfrak{T}(u_2)$ whose cube $\\mathfrak{I}(p)$ is not disjoint from $\\mathfrak{I}(u_1)$ lies in $\\mathfrak{S}_0(t,u_1,u_2)$. Applied to the membership of $u_1,u_2$ in $t$, the distinctness $u_1\\ne u_2$, the order $\\mathfrak{I}(u_1)\\le\\mathfrak{I}(u_2)$ and the union membership of $p$, it leaves exactly the goal of showing that $\\mathfrak{I}(p)$ and $\\mathfrak{I}(u_1)$ are not disjoint.",
+              "grounded": true
+            },
+            {
+              "start_line": 291,
+              "end_line": 292,
+              "explanation": "Grid cubes are nonempty (`Grid.nonempty`), so choose a point $c\\in\\mathfrak{I}(p)$ (here $\\mathfrak{I}(p)$ is viewed as a subset of $X$). From `TileStructure.Forest.smul_four_le`, applied to $u_1\\in t$ and $p\\in\\mathfrak{T}(u_1)$, the tile comparison $\\mathrm{smul}(4,p)\\le\\mathrm{smul}(1,u_1)$ holds; its first component compares the cubes, and applied to $c$ it gives $c\\in\\mathfrak{I}(u_1)$. Thus $c$ is a common point of $\\mathfrak{I}(p)$ and $\\mathfrak{I}(u_1)$, so the two cubes are not disjoint. This discharges the remaining goal and yields $p\\in\\mathfrak{S}_0(t,u_1,u_2)$.",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "smul",
+              "latex": "\\mathrm{smul}(l,p)",
+              "meaning": "the pair consisting of the dyadic cube $\\mathfrak{I}(p)$ and the ball of radius $l$ about $\\mathcal{Q}p$ in the function-distance metric attached to $p$"
+            }
+          ]
+        },
+        {
+          "name": "TileStructure.Forest.overlap_implies_distance",
+          "module": "Carleson.ForestOperator.AlmostOrthogonality",
+          "statement": "Let $X$ be a metric space carrying the standing Chapter 7 proof data (parameters $a$ and $q\\in(1,2]$, kernel $K$, exponents $\\sigma_1\\le\\sigma_2$, sets $F,G$) and let $Q$ be a simple function on $X$ with values in $\\Theta(X)$. Let the space be equipped with a tile structure subordinate to $Q$, with $D=2^{\\mathbb{c}a^2}$, $\\kappa=2^{-10a}$, depth constant $S$ and base point $o$, whose tiles $p$ carry a dyadic cube $\\mathfrak{I}(p)$, a value $\\mathcal{Q}p$ in $\\Theta(X)$ and a scale $\\mathfrak{s}(p)$. Let $t$ be a forest of depth $n$ and let $u_1,u_2\\in t$ be distinct tiles with $\\mathfrak{I}(u_1)\\le\\mathfrak{I}(u_2)$. If $p\\in\\mathfrak{T}(u_1)\\cup\\mathfrak{T}(u_2)$ and $\\mathfrak{I}(p)$ is not disjoint from $\\mathfrak{I}(u_1)$, then $p\\in\\mathfrak{S}_0(t,u_1,u_2)$, i.e. $2^{Zn/2}\\le \\mathrm{dist}_{(p)}(\\mathcal{Q}u_1,\\mathcal{Q}u_2)$, where $Z=2^{12a}$ and $\\mathfrak{S}_0(t,u_1,u_2)=\\{p\\in\\mathfrak{T}(u_1)\\cup\\mathfrak{T}(u_2): 2^{Zn/2}\\le \\mathrm{dist}_{(p)}(\\mathcal{Q}u_1,\\mathcal{Q}u_2)\\}$.",
+          "summary": "The proof shows that tiles $p$ lying over one of two distinct tiles $u_1,u_2$ of a forest whose cube meets $\\mathfrak{I}(u_1)$ have $Q$-values that are far apart at the scale of $p$. By the trichotomy of grid cubes one first reduces to the case $\\mathfrak{I}(p)\\le\\mathfrak{I}(u_1)$: if instead $\\mathfrak{I}(u_1)\\le\\mathfrak{I}(p)$, one moves to a tile $p'$ over $u_1$ with $\\mathfrak{I}(p')\\le\\mathfrak{I}(u_1)$, applies the statement there, and transfers the estimate back to $p$ by monotonicity of the function distance in the cube. In the reduced case the two alternatives $p\\in\\mathfrak{T}(u_1)$ and $p\\in\\mathfrak{T}(u_2)$ are handled symmetrically: the reverse triangle inequality splits $\\mathrm{dist}_{(p)}(\\mathcal{Q}u_1,\\mathcal{Q}u_2)$ into a distance from $\\mathcal{Q}p$ to the $Q$-value of the tile over which $p$ does *not* lie, which is $>2^{Z(n+1)}$ by the forest's separation property, minus the distance from $\\mathcal{Q}p$ to the $Q$-value of the tile it does lie over, which is $\\le 4$ because `smul_four_le` puts the radius-$1$ ball around the latter $Q$-value inside the radius-$4$ ball around $\\mathcal{Q}p$. A purely numerical estimate $2^{Z(n+1)}-4\\ge 2^{Zn/2}$, obtained from $Z\\ge 4$, then yields the required lower bound $2^{Zn/2}$.",
+          "steps": [
+            {
+              "start_line": 243,
+              "end_line": 243,
+              "explanation": "Unfold the definition of $\\mathfrak{S}_0$ and discharge its first membership condition with the hypothesis $hp$. Since $p$ is already known to lie in $\\mathfrak{T}(u_1)\\cup\\mathfrak{T}(u_2)$, the goal becomes exactly the distance bound $2^{Zn/2}\\le \\mathrm{dist}_{(p)}(\\mathcal{Q}u_1,\\mathcal{Q}u_2)$.",
+              "grounded": true
+            },
+            {
+              "start_line": 244,
+              "end_line": 250,
+              "explanation": "Reduce by symmetry to the case $\\mathfrak{I}(p)\\le\\mathfrak{I}(u_1)$ (a `wlog` argument, generalized over $p$; in the complementary case the goal is the same inequality, with the wlog hypothesis available as `this` for every tile satisfying the hypotheses and having its cube below $\\mathfrak{I}(u_1)$). In the complementary case $\\mathfrak{I}(p)\\not\\le\\mathfrak{I}(u_1)$ together with non-disjointness of $\\mathfrak{I}(p)$ and $\\mathfrak{I}(u_1)$ gives $\\mathfrak{I}(u_1)\\le\\mathfrak{I}(p)$, by the trichotomy `le_or_ge_or_disjoint` (for any two cubes $i,j$ one has $i\\le j$ or $j\\le i$ or they are disjoint). Choose $p'\\in\\mathfrak{T}(u_1)$, which exists by `TileStructure.Forest.nonempty`; from `TileStructure.Forest.smul_four_le` applied to $u_1$ and $p'$ get $\\mathfrak{I}(p')\\le\\mathfrak{I}(u_1)$, so $\\mathfrak{I}(p')$ meets $\\mathfrak{I}(u_1)$ — witnessed by a point $c\\in\\mathfrak{I}(p')$ (which also lies in $\\mathfrak{I}(u_1)$). Apply `this` to $p'$ to obtain the bound at $p'$, and transfer it to $p$ by monotonicity of the function distance under cube inclusion, `Grid.dist_mono` (if $I\\le J$ then $\\mathrm{dist}_{(I)}\\le\\mathrm{dist}_{(J)}$ for all $f,g$), applied to $\\mathfrak{I}(p')\\le\\mathfrak{I}(u_1)\\le\\mathfrak{I}(p)$.",
+              "grounded": true
+            },
+            {
+              "start_line": 251,
+              "end_line": 264,
+              "explanation": "Establish the numerical inequality $2^{Z(n+1)}-4\\ge 2^{Zn/2}$ for real powers of $2$. From `four_le_Z` ($4\\le Z$) one gets $4\\le Z(n+1)$, then $4\\le 2^{Z(n+1)-1}$ because $2\\le Z(n+1)-1$. Hence $2^{Z(n+1)}-4\\ge 2^{Z(n+1)}-2^{Z(n+1)-1}=2^{Z(n+1)-1}\\ge 2^{Zn}$ (monotonicity of $x\\mapsto 2^x$ in the exponent, $Zn\\le Z(n+1)-1$), and finally $2^{Zn}\\ge 2^{Zn/2}$ by monotonicity of real powers with base $2\\ge 1$ together with $Zn/2\\le Zn$.",
+              "grounded": true
+            },
+            {
+              "start_line": 265,
+              "end_line": 275,
+              "explanation": "Split according to whether $p\\in\\mathfrak{T}(u_1)$ or $p\\in\\mathfrak{T}(u_2)$. In the first case, the triangle inequality in the pseudo-metric on $\\Theta(X)$ attached to $p$ gives $\\mathrm{dist}_{(p)}(\\mathcal{Q}u_1,\\mathcal{Q}u_2)\\ge \\mathrm{dist}_{(p)}(\\mathcal{Q}p,\\mathcal{Q}u_2)-\\mathrm{dist}_{(p)}(\\mathcal{Q}p,\\mathcal{Q}u_1)$. The first term is $>2^{Z(n+1)}$ by `TileStructure.Forest.lt_dist'` (for distinct $u,u'\\in t$, $p\\in\\mathfrak{T}(u')$ and $\\mathfrak{I}(p)\\le\\mathfrak{I}(u)$, one has $2^{Z(n+1)}<\\mathrm{dist}_{(p)}(\\mathcal{Q}p,\\mathcal{Q}u)$) applied with $(u,u')=(u_2,u_1)$, using $\\mathfrak{I}(p)\\le\\mathfrak{I}(u_1)\\le\\mathfrak{I}(u_2)$. The second term is $\\le 4$, because `TileStructure.Forest.smul_four_le` for $u_1$ supplies the ball inclusion $\\mathrm{ball}_{(u_1)}(\\mathcal{Q}u_1,1)\\subseteq \\mathrm{ball}_{(p)}(\\mathcal{Q}p,4)$, and $\\mathcal{Q}u_1\\in\\mathrm{ball}_{(u_1)}(\\mathcal{Q}u_1,1)$; membership in $\\mathrm{ball}_{(p)}(\\mathcal{Q}p,4)$ gives the distance bound. So the difference is at least $2^{Z(n+1)}-4\\ge 2^{Zn/2}$ by the preceding numerical inequality.",
+              "grounded": true
+            },
+            {
+              "start_line": 276,
+              "end_line": 285,
+              "explanation": "The second case, $p\\in\\mathfrak{T}(u_2)$, is the mirror image: $\\mathrm{dist}_{(p)}(\\mathcal{Q}u_1,\\mathcal{Q}u_2)\\ge \\mathrm{dist}_{(p)}(\\mathcal{Q}p,\\mathcal{Q}u_1)-\\mathrm{dist}_{(p)}(\\mathcal{Q}p,\\mathcal{Q}u_2)$ by the triangle inequality (`dist_triangle_right`), the first term is $>2^{Z(n+1)}$ by `TileStructure.Forest.lt_dist'` applied with $(u,u')=(u_1,u_2)$ and the hypothesis $\\mathfrak{I}(p)\\le\\mathfrak{I}(u_1)$, and the second is $\\le 4$ since `TileStructure.Forest.smul_four_le` for $u_2$ supplies $\\mathrm{ball}_{(u_2)}(\\mathcal{Q}u_2,1)\\subseteq\\mathrm{ball}_{(p)}(\\mathcal{Q}p,4)$ and $\\mathcal{Q}u_2$ lies in the former. Again the difference is at least $2^{Z(n+1)}-4\\ge 2^{Zn/2}$.",
+              "grounded": true
+            }
+          ],
+          "notation": [
+            {
+              "lean": "Q",
+              "latex": "Q",
+              "meaning": "the simple function $X\\to\\Theta(X)$ to which the tile structure is subordinate"
+            },
+            {
+              "lean": "defaultZ",
+              "latex": "Z",
+              "meaning": "the constant $2^{12a}$"
+            },
+            {
+              "lean": "𝒬",
+              "latex": "\\mathcal{Q}",
+              "meaning": "the $\\Theta(X)$-valued function attached to a tile"
+            },
+            {
+              "lean": "dist_(p)",
+              "latex": "\\mathrm{dist}_{(p)}",
+              "meaning": "the function distance $\\mathrm{dist}_{\\mathfrak{c}(p),\\,D^{\\mathfrak{s}(p)}/4}$ measured on the ball $B(\\mathfrak{c}(p), D^{\\mathfrak{s}(p)}/4)$"
+            },
+            {
+              "lean": "TileStructure.Forest.𝔖₀",
+              "latex": "\\mathfrak{S}_0(t,u_1,u_2)",
+              "meaning": "the set of tiles $p\\in\\mathfrak{T}(u_1)\\cup\\mathfrak{T}(u_2)$ with $2^{Zn/2}\\le\\mathrm{dist}_{(p)}(\\mathcal{Q}u_1,\\mathcal{Q}u_2)$"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
