@@ -195,3 +195,5 @@ make ci   # ruff and pytest
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+Built by Koko Bhadra: [koko1123.github.io](https://koko1123.github.io) · [X @baconeggnlean](https://x.com/baconeggnlean)
