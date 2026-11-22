@@ -3,10 +3,18 @@
 Step-by-step natural-language explanations of Lean 4 proofs, grounded in the goal states
 the Lean compiler reports at each tactic.
 
-![A Lean 4 proof from teorth/pfr beside its English explanation, with each step citing the source lines it covers](docs/screenshot.png)
+![One lemma of OpenAI's Erdős problem 183 proof beside its English explanation, each step citing the Lean lines it covers](docs/erdos-183.png)
 
-The screenshot is unedited output for `exists_isUniform_of_rdist_eq_zero` in
-[teorth/pfr](https://github.com/teorth/pfr), generated with `deepseek-v4-1-flash-1017-ultrafast`.
+The screenshot is unedited output for one lemma of OpenAI's machine-written proof of
+Erdős problem 183, generated with `deepseek-v4-1-flash-1017-ultrafast`.
+
+**Read full explanations** of three proofs from
+[openai/ten-proofs](https://github.com/openai/ten-proofs), each with the Lean and goal
+state folded under every step:
+
+- [Erdős problem 183](docs/examples/erdos-183.md): multicolour triangle Ramsey numbers, 11 lemmas.
+- [The degeneracy conjecture is false](docs/examples/degeneracy-conjecture.md): 16 lemmas.
+- [NP-hardness of finite $p$-norm GapCVP](docs/examples/gapcvp.md): 7 lemmas.
 
 ## What it does
 
@@ -22,8 +30,11 @@ Lean.
 3. **Explain.** A model explains each lemma bottom-up from that record. Each lemma's English
    statement and notation are passed to the lemmas that use it, so no request needs the
    whole proof and long proofs are split at tactic boundaries.
-4. **Check.** Every step must cite the source lines it covers. Steps that cite lines outside
-   the proof, or lines with no tactic, are flagged mechanically.
+4. **Check.** Two checks are mechanical. Every step must cite the source lines it covers,
+   and steps that cite lines outside the proof, or lines with no tactic, are flagged. A
+   Lean identifier from the project must not appear inside mathematics, where the reader
+   cannot look it up; if one does, the tool asks the model once to name the object and
+   repair the text.
 5. **Score.** For projects with a [blueprint](https://github.com/PatrickMassot/leanblueprint),
    a judge model compares each explanation with the human-written statement and proof.
 
@@ -67,28 +78,32 @@ numbers. What the second module showed:
 
 ### On a machine-written proof
 
-![The explanation of divergentRamseyRoot from OpenAI's Erdős problem 183 proof](docs/erdos-183.png)
-
 [openai/ten-proofs](https://github.com/openai/ten-proofs) has no blueprint to score
 against, so these are reading checks, not judged results.
 
-| File | Size | Declarations | Tactics | Extraction | Explained | Time | Cost |
-|---|---|---|---|---|---|---|---|
-| `MulticolorTriangleRamsey.lean` | 126 KB | 152 | 1,480 | under 2 min | `erdos_183`, 11 lemmas | 46 s | $0.32 |
-| `CompactnessAndDegeneracy.lean` | 722 KB | 981 | 8,296 | 4 min 45 s | `not_erdos_146`, 16 lemmas | 63 s | $0.44 |
-| `GapCVP.lean` | 5.3 MB | 8,606 | 30,042 | 20 min 31 s | `finitePNormGapCVPIsNPHard`, 10 lemmas | 40 s | $0.25 |
+| File | Size | Declarations | Tactics | Extraction | Explained | Cost | Steps citing valid lines | Lemmas leaking Lean names |
+|---|---|---|---|---|---|---|---|---|
+| `MulticolorTriangleRamsey.lean` | 126 KB | 152 | 1,480 | under 2 min | `erdos_183`, 11 lemmas | $0.32 | 100% | 0 |
+| `CompactnessAndDegeneracy.lean` | 722 KB | 981 | 8,296 | 4 min 45 s | `not_erdos_146`, 16 lemmas | $0.41 | 100% | 0, was 6 |
+| `GapCVP.lean` | 5.3 MB | 8,606 | 30,042 | 20 min 31 s | `finitePNormGapCVPIsNPHard`, 7 lemmas | $0.21 | 100% | 0, was 3 |
 
-In the first file, three lemmas and the four definitions they rest on were checked line by
-line against the Lean and matched. In the second, the top-level argument was checked
-against the Lean, and one 150-tactic lemma was explained in three parts to exercise the
-long-proof path: its 17 steps cover all 159 proof lines in source order.
+The last column counts lemmas where a project identifier such as `finitePLatticeDistance`
+appeared inside a formula. Before the naming rule and repair request, 6 of 16 and 3 of 10
+lemmas did; the published examples have none. The check only knows the names each lemma
+depends on, so it undercounts.
 
-In the third, the main theorem is a one-line term-mode application of a private transfer
-lemma. Its statement, the transfer lemma's three steps, and the five definitions they
-paraphrase (the gap factor $n^{1/(200p)}$, well-formedness, the yes and no conditions, the
-reduction structure) were checked against the Lean and matched. Two levels deep is still
-plumbing here: the hardness argument itself sits further down among 8,606 declarations
-and has not been explained.
+What was read against the Lean, on an earlier generation of these explanations: in the
+first file, three lemmas and the four definitions they rest on, line by line; in the
+second, the top-level argument, plus one 150-tactic lemma explained in three parts to
+exercise the long-proof path, whose 17 steps cover all 159 proof lines in source order; in
+the third, the main theorem, the private transfer lemma it applies, and the definitions of
+well-formedness, the yes and no conditions, and the reduction structure. All matched. In
+the published examples, the top-level argument of each was read against the Lean again;
+the rest was not re-read.
+
+In the third file, two levels deep is still plumbing: the main theorem transfers hardness
+between two encodings of the same problem, and the hardness argument itself sits further
+down among 8,606 declarations and has not been explained.
 
 Machine-written proofs lean on case analysis. One ten-line lemma in the second file runs
 its closing tactic on 225 goals, so a tactic that ran on many goals is shown to the model
@@ -157,7 +172,9 @@ roughly in order of value:
   results and repeated runs to separate signal from model variance.
 - **Machine-written proofs at scale.** The motivating target is
   [openai/math](https://github.com/openai/math), a 474 MB library. Nothing from it has
-  been run yet, and Lean identifiers coined by the prover still leak into statements.
+  been run yet.
+- **Going deep.** Explaining a whole 8,000-declaration proof, not its top two levels,
+  needs a way to choose which lemmas matter and to summarise the rest.
 - **Term-mode proofs.** Proofs without tactics have no goal states to ground against.
 - **Model comparison.** Which models explain Lean faithfully, and at what cost, is unmeasured.
 
