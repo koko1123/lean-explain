@@ -65,7 +65,9 @@ def run_explain(args: argparse.Namespace, cache: Path) -> None:
 
     config = llm.make_config(args.base_url, args.model, args.extra_body)
     budget = llm.make_budget(args.budget, [config])
-    explanations = explain.explain_plan(plan, make_chat(config, cache, budget), args.max_chars)
+    explanations = explain.explain_plan(
+        plan, make_chat(config, cache, budget), args.max_chars, args.review
+    )
     # One directory per model, so a run with another model never overwrites this one.
     out = args.out / config.model.replace("/", "_")
     out.mkdir(parents=True, exist_ok=True)
@@ -126,7 +128,7 @@ def run_eval(args: argparse.Namespace, cache: Path) -> None:
         # Judge each result as soon as its last declaration is explained, so a capped run
         # keeps what it paid for.
         for explanation in explain.iter_explanations(
-            targets, cited_for, make_chat(config, cache, budget), args.max_chars
+            targets, cited_for, make_chat(config, cache, budget), args.max_chars, args.review
         ):
             done[explanation.name] = explanation
             for key, (entry, names) in list(groups.items()):
@@ -155,6 +157,7 @@ def run_eval(args: argparse.Namespace, cache: Path) -> None:
         "judge": judge_config.model,
         "prompt_version": explain.PROMPT_VERSION,
         "judge_version": evaluate.JUDGE_VERSION,
+        "review": args.review,
         "unjudged": len(groups),
         "stopped": stopped,
         "summary": summary,
@@ -196,6 +199,11 @@ def main() -> None:
         cmd.add_argument("--base-url", help="OpenAI-compatible endpoint, e.g. a local server")
         cmd.add_argument("--model")
         cmd.add_argument("--extra-body", type=json.loads, help="JSON merged into each request body")
+        cmd.add_argument(
+            "--review",
+            action="store_true",
+            help="have the model check each draft against the record and correct it",
+        )
         cmd.add_argument(
             "--budget",
             type=float,

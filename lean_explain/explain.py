@@ -9,7 +9,7 @@ from pathlib import Path
 
 from lean_explain.extract import Decl, Step
 
-PROMPT_VERSION = "5"
+PROMPT_VERSION = "6"
 
 SYSTEM = """\
 You are writing the reader's guide to a formal proof. The reader is a research
@@ -54,7 +54,10 @@ statement, including those Lean carries as instance arguments such as finiteness
 countability, or a measure being a probability measure, because a dropped hypothesis
 makes the statement false. Put them in the setup clause in ordinary mathematical
 language, and omit only what has no mathematical content, such as universe levels and
-the names of instance arguments.
+the names of instance arguments. When the statement uses a named constant or function
+whose definition is in <project_results>, give its value or formula, not just its name.
+Take the meaning of each project definition from its definition and doc comment there,
+and do not guess a meaning from its name.
 
 Write mathematics, not Lean. Call each object by its mathematical name (the Ruzsa
 distance, not rdist; antisymmetry, not le_antisymm). Put mathematics in LaTeX between
@@ -137,6 +140,15 @@ TEXT = {"type": "string"}
 FULL_SCHEMA = object_schema(statement=TEXT, steps=STEPS, summary=TEXT, notation=NOTATION)
 CHUNK_SCHEMA = object_schema(steps=STEPS, progress=TEXT, notation=NOTATION)
 FINAL_SCHEMA = object_schema(statement=TEXT, summary=TEXT)
+
+REVIEW_TASK = (
+    "The draft below explains this proof. Check every sentence of it against the tactic "
+    "record, the goal states, and the statements of the cited results, and correct what is "
+    "wrong: false assertions, reversed directions (larger and smaller, left and right, "
+    "which side of an inequality), objects described as something their definition does "
+    "not say, and reasons the record does not support. Leave correct sentences and all "
+    "line citations as they are. Reply with the corrected explanation in full."
+)
 
 FULL_TASK = (
     "Explain this proof. Give the statement, then the steps in source order, then a "
@@ -282,7 +294,9 @@ def render_results(decl: Decl, known: dict[str, Explanation], cited: dict[str, d
         elif dep.name in cited:
             info = cited[dep.name]
             if info["kind"] == "def" and info.get("source"):
-                body, form = strip_doc(info["source"])[:1500], "lean_definition"
+                # A definition keeps its doc comment: it names the object, and unlike a
+                # theorem's doc comment it cannot leak the informal proof.
+                body, form = info["source"][:1500], "lean_definition"
             else:
                 body, form = info["type"], "lean_statement"
             parts.append(f'<result name="{dep.name}" form="{form}">\n{body}\n</result>')
@@ -361,8 +375,13 @@ def explain_decl(
     chat: Chat,
     max_chars: int = 200_000,
     notation: dict[str, dict] | None = None,
+    review: bool = False,
 ) -> Explanation:
-    """Explain one declaration; `notation` is the glossary shared across the write-up."""
+    """Explain one declaration; `notation` is the glossary shared across the write-up.
+
+    With `review`, a second request checks the draft against the record and corrects it.
+    Review applies to proofs that fit in one request.
+    """
     notation = {} if notation is None else notation
     header = render_header(decl, known, cited, notation)
     chunks = chunk_steps(decl.steps, max_chars)
@@ -374,6 +393,15 @@ def explain_decl(
             f"{header}<tactic_record>\n{record}\n</tactic_record>\n\n{FULL_TASK}",
             FULL_SCHEMA,
         )
+        if review:
+            draft = json.dumps(reply, ensure_ascii=False, indent=1)
+            reply = ask(
+                chat,
+                SYSTEM,
+                f"{header}<tactic_record>\n{record}\n</tactic_record>\n\n"
+                f"<draft>\n{draft}\n</draft>\n\n{REVIEW_TASK}",
+                FULL_SCHEMA,
+            )
         return Explanation(
             decl.name,
             decl.module,
@@ -428,21 +456,24 @@ def iter_explanations(
     cited_for: Callable[[Decl], dict[str, dict]],
     chat: Chat,
     max_chars: int = 200_000,
+    review: bool = False,
 ) -> Iterator[Explanation]:
     """Explain declarations in the given order, carrying statements and notation forward."""
     known: dict[str, Explanation] = {}
     notation: dict[str, dict] = {}
     for decl in decls:
-        explanation = explain_decl(decl, known, cited_for(decl), chat, max_chars, notation)
+        explanation = explain_decl(decl, known, cited_for(decl), chat, max_chars, notation, review)
         known[decl.name] = explanation
         for entry in explanation.notation:
             notation.setdefault(entry["lean"], entry)
         yield explanation
 
 
-def explain_plan(plan: Plan, chat: Chat, max_chars: int = 200_000) -> list[Explanation]:
+def explain_plan(
+    plan: Plan, chat: Chat, max_chars: int = 200_000, review: bool = False
+) -> list[Explanation]:
     """Explain every planned declaration, dependencies first."""
-    return list(iter_explanations(plan.order, lambda decl: plan.cited, chat, max_chars))
+    return list(iter_explanations(plan.order, lambda decl: plan.cited, chat, max_chars, review))
 
 
 def cached_chat(chat: Chat, model: str, cache_dir: Path) -> Chat:

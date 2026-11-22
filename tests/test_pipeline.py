@@ -129,13 +129,14 @@ def test_generator_never_sees_the_docstring():
     assert "The sum of two even numbers" in even.source
     assert "The sum of two even numbers" not in explain.numbered_source(even)
     assert explain.numbered_source(even).splitlines()[0].startswith("    4  theorem toy_even")
-    assert "gloss" not in explain.render_results(even, {}, {"Toy.helper_def": HELPER})
+    # A cited definition keeps its doc comment, which names the object.
+    assert "/-- gloss -/" in explain.render_results(even, {}, {"Toy.helper_def": HELPER})
 
 
 def test_statements_and_notation_feed_later_lemmas():
     calls = []
     explanations = explain.explain_plan(toy_plan(), fake_chat(calls))
-    assert '<result name="Toy.helper_def" form="lean_definition">\ndef Toy.helper_def' in calls[0]
+    assert '<result name="Toy.helper_def" form="lean_definition">\n/-- gloss -/' in calls[0]
     assert "<notation>\n(none yet)\n</notation>" in calls[0]
     assert '<result name="toy_even" form="english">\nS(toy_even)\n</result>' in calls[1]
     assert "- the double of a: $2a$ (Lean: a + a)" in calls[1]
@@ -324,3 +325,25 @@ def test_budget_charges_by_token_price_and_stops_at_the_cap():
     else:
         raise AssertionError("the cap did not stop the run")
     assert "priced: 2 calls, 250,000 tokens in, 50,000 out, $1.00" in budget.report()
+
+
+def test_review_sends_the_draft_back_and_uses_the_corrected_reply():
+    use = toy_decls()[1]
+    prompts = []
+
+    def chat(system, user, schema):
+        prompts.append(user)
+        text = "draft step" if len(prompts) == 1 else "corrected step"
+        return json.dumps(
+            {
+                "statement": "s",
+                "steps": [{"start_line": 11, "end_line": 11, "explanation": text}],
+                "summary": "p",
+                "notation": [],
+            }
+        )
+
+    result = explain.explain_decl(use, {}, {}, chat, review=True)
+    assert len(prompts) == 2 and "<draft>" in prompts[1] and "draft step" in prompts[1]
+    assert prompts[1].rstrip().endswith(explain.REVIEW_TASK)
+    assert result.steps[0].explanation == "corrected step"
