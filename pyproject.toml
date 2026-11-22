@@ -1,0 +1,27 @@
+[project]
+name = "lean-explain"
+version = "0.1.0"
+description = "Step-by-step natural-language explanations of Lean 4 proofs, grounded in compiler goal states."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+lean-explain = "lean_explain.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

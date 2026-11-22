@@ -78,9 +78,11 @@ the extracted record and the prompt version, so a rerun pays only for what chang
 **Assemble.** The output for a target is one Markdown file plus a JSON sidecar holding
 the same content with spans, which is what the judge and the JSONL export read.
 
-The orchestrator is Python 3.12 managed with `uv`. The model is Claude through the
-Anthropic API, with the model ID and a per-run spend cap in configuration. The API key is
-read from `.env.local` and is never written by the tool.
+The orchestrator is Python 3.12 managed with `uv` and has no runtime dependencies. The
+model is reached through any OpenAI-compatible chat completions endpoint; the default is
+OpenRouter, so the generator and the judge can be different vendors' models behind one
+key. The endpoint, model ID, and API key are read from the environment or `.env.local`,
+and the tool never writes them.
 
 ## Evaluation
 
@@ -92,8 +94,10 @@ Three data sets serve three purposes.
 | Smoke | `facebookresearch/miniF2F` | Per problem, informal solution | Fast regression check |
 | Held-out | `openai/math` | Per main result, 176 papers and about 208 declarations in `lean/formalization.yaml` | Final measurement only |
 
-The `openai/math` manuscripts are dated September and October 2026, so current models
-have not been trained on them. They are not gold: the repository calls them raw research
+The `openai/math` manuscripts are dated September and October 2026. Whether a given
+model was trained on them depends on its cutoff, which must be checked per model before
+its held-out score is reported; an OpenAI model is the likeliest to have seen them, so
+the default generator is from another vendor. They are not gold: the repository calls them raw research
 data, and the formal proof may take a different route than the paper.
 
 Three scores are reported per target. Statement fidelity asks a judge model whether the
