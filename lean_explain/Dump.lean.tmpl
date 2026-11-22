@@ -1,6 +1,12 @@
 import __MODULE__
 open Lean Meta Elab Command
 
+/-- The name as written in the source: a private declaration without its mangled prefix. -/
+def display (n : Name) : Name := (privateToUserName? n).getD n
+
+/-- Compiler-generated auxiliaries such as `foo._proof_1`. A private declaration is not one. -/
+def isAux (n : Name) : Bool := (display n).isInternalDetail
+
 /-- Constants used by `name`, looking through compiler-generated auxiliaries. -/
 partial def usedThrough (env : Environment) (name : Name) (seen : NameSet) : NameSet := Id.run do
   let some info := env.find? name | return seen
@@ -12,7 +18,7 @@ partial def usedThrough (env : Environment) (name : Name) (seen : NameSet) : Nam
     for c in e.getUsedConstants do
       if seen.contains c then continue
       seen := seen.insert c
-      if c.isInternalDetail then
+      if isAux c then
         seen := usedThrough env c seen
   return seen
 
@@ -32,19 +38,19 @@ run_cmd do
   let some modIdx := env.getModuleIdx? modName | throwError "module not found"
   let mut out : Array Json := #[]
   for name in env.header.moduleData[modIdx.toNat]!.constNames do
-    if name.isInternalDetail then continue
+    if isAux name then continue
     let some info := env.find? name | continue
     let some ranges ← findDeclarationRanges? name | continue
     let typeFmt ← liftTermElabM <| Meta.ppExpr info.type
     let doc ← findDocString? env name
     let mut deps : Array Json := #[]
     for c in (usedThrough env name {}).toList do
-      if c.isInternalDetail || c == name then continue
+      if isAux c || c == name then continue
       let some idx := env.getModuleIdxFor? c | continue
       deps := deps.push <| Json.mkObj
-        [("name", toString c), ("module", toString env.header.moduleNames[idx.toNat]!)]
+        [("name", toString (display c)), ("module", toString env.header.moduleNames[idx.toNat]!)]
     out := out.push <| Json.mkObj [
-      ("name", toString name),
+      ("name", toString (display name)),
       ("kind", kindOf info),
       ("type", toString typeFmt),
       ("doc", match doc with | some d => Json.str d | none => Json.null),

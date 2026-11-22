@@ -432,3 +432,16 @@ def test_a_proof_wrapped_in_one_outer_tactic_still_splits_between_its_steps():
         ["b", "inner"],
         ["c"],
     ]
+
+
+def test_tactics_go_to_the_innermost_declaration_and_gaps_are_skipped():
+    decls = [
+        {"name": "outer", "line": 1, "endLine": 20},
+        {"name": "inner", "line": 5, "endLine": 8},
+        {"name": "later", "line": 30, "endLine": 40},
+    ]
+    tactics = [tactic("t", line, 0, line, 1) for line in (3, 6, 12, 25, 35)]
+    steps = assign_steps(decls, tactics)
+    assert [s.line for s in steps["outer"]] == [3, 12]
+    assert [s.line for s in steps["inner"]] == [6]
+    assert [s.line for s in steps["later"]] == [35]

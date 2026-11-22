@@ -1,12 +1,13 @@
 """Extract declarations, dependencies, and per-tactic goal states from a built Lean module."""
 
+import bisect
 import hashlib
 import json
 import os
 import shutil
 import subprocess
 import tempfile
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from importlib import resources
 from pathlib import Path
 
@@ -39,14 +40,6 @@ class Decl:
     source: str
     deps: list[Dep] = field(default_factory=list)
     steps: list[Step] = field(default_factory=list)
-
-
-def decl_from_dict(data: dict) -> Decl:
-    return Decl(
-        **{k: v for k, v in data.items() if k not in ("deps", "steps")},
-        deps=[Dep(**d) for d in data["deps"]],
-        steps=[Step(**s) for s in data["steps"]],
-    )
 
 
 def lake_env() -> dict[str, str]:
@@ -101,14 +94,22 @@ def dump_declarations(project: Path, module: str) -> list[dict]:
 
 def assign_steps(decls: list[dict], tactics: list[dict]) -> dict[str, list[Step]]:
     """Attach each tactic to the innermost declaration whose source range contains it."""
+    ordered = sorted(decls, key=lambda d: d["line"])
+    starts = [d["line"] for d in ordered]
+    # reach[i] is the last line covered by any declaration up to i, so a scan backwards
+    # can stop as soon as nothing earlier can contain the tactic.
+    reach: list[int] = []
+    for decl in ordered:
+        reach.append(max(decl["endLine"], reach[-1] if reach else 0))
     steps: dict[str, list[Step]] = {d["name"]: [] for d in decls}
     for tactic in sorted(tactics, key=lambda t: (t["pos"]["line"], t["pos"]["column"])):
         line = tactic["pos"]["line"]
-        owners = [d for d in decls if d["line"] <= line <= d["endLine"]]
-        if not owners:
+        index = bisect.bisect_right(starts, line) - 1
+        while index >= 0 and reach[index] >= line and ordered[index]["endLine"] < line:
+            index -= 1
+        if index < 0 or ordered[index]["endLine"] < line:
             continue
-        owner = min(owners, key=lambda d: d["endLine"] - d["line"])
-        steps[owner["name"]].append(
+        steps[ordered[index]["name"]].append(
             Step(
                 tactic=tactic["tactic"],
                 goals=tactic["goals"],
@@ -143,10 +144,14 @@ def build_decls(
     ]
 
 
+# Bump when Dump.lean.tmpl changes what it reports, so stale records are not reused.
+DUMP_VERSION = 2
+
+
 def dump_cached(project: Path, module: str, cache_dir: Path) -> list[dict]:
     """Declarations of a module without tactic steps; fast, and enough to cite a result."""
     digest = hashlib.sha256(module_path(project, module).read_bytes()).hexdigest()[:16]
-    cached = cache_dir / f"{module}.{digest}.decls.json"
+    cached = cache_dir / f"{module}.{digest}.v{DUMP_VERSION}.decls.json"
     if cached.exists():
         return json.loads(cached.read_text())
     subprocess.run(["lake", "build", module], cwd=project, env=lake_env(), check=True)
@@ -166,14 +171,22 @@ def statements(project: Path, module: str, cache_dir: Path) -> list[dict]:
 
 
 def extract_module(project: Path, repl: Path, module: str, cache_dir: Path) -> list[Decl]:
-    """Extract one module, reusing the cached record when the source file is unchanged."""
+    """Extract one module, reusing cached records when the source file is unchanged.
+
+    The tactic record and the declaration dump are cached separately: re-elaborating a
+    large file takes minutes, and a change to the dump should not force it.
+    """
     source = module_path(project, module)
     source_text = source.read_text()
-    digest = hashlib.sha256(source_text.encode()).hexdigest()[:16]
-    cached = cache_dir / f"{module}.{digest}.json"
-    if cached.exists():
-        return [decl_from_dict(d) for d in json.loads(cached.read_text())]
     raw = dump_cached(project, module, cache_dir)
-    decls = build_decls(module, source_text, raw, run_repl(project, repl, source))
-    cached.write_text(json.dumps([asdict(d) for d in decls]))
-    return decls
+    digest = hashlib.sha256(source_text.encode()).hexdigest()[:16]
+    cached = cache_dir / f"{module}.{digest}.tactics.json"
+    if cached.exists():
+        tactics = json.loads(cached.read_text())
+    else:
+        tactics = [
+            {key: t[key] for key in ("tactic", "goals", "pos", "endPos")}
+            for t in run_repl(project, repl, source)
+        ]
+        cached.write_text(json.dumps(tactics))
+    return build_decls(module, source_text, raw, tactics)
