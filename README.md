@@ -70,11 +70,21 @@ numbers. What the second module showed:
 ![The explanation of divergentRamseyRoot from OpenAI's Erdős problem 183 proof](docs/erdos-183.png)
 
 [openai/ten-proofs](https://github.com/openai/ten-proofs) has no blueprint to score
-against, so this is a reading check, not a judged result. The tool extracted
-`MulticolorTriangleRamsey.lean` (152 declarations, 1,480 tactics) and explained the main
-theorem `erdos_183` three levels deep, 11 lemmas, in 46 seconds for $0.32. Three of the
-lemmas and the four definitions they rest on were checked line by line against the Lean
-and matched.
+against, so these are reading checks, not judged results.
+
+| File | Size | Declarations | Tactics | Extraction | Explained | Time | Cost |
+|---|---|---|---|---|---|---|---|
+| `MulticolorTriangleRamsey.lean` | 126 KB | 152 | 1,480 | under 2 min | `erdos_183`, 11 lemmas | 46 s | $0.32 |
+| `CompactnessAndDegeneracy.lean` | 722 KB | 981 | 8,296 | 4 min 45 s | `not_erdos_146`, 16 lemmas | 63 s | $0.44 |
+
+In the first file, three lemmas and the four definitions they rest on were checked line by
+line against the Lean and matched. In the second, the top-level argument was checked
+against the Lean, and one 150-tactic lemma was explained in three parts to exercise the
+long-proof path: its 17 steps cover all 159 proof lines in source order.
+
+Machine-written proofs lean on case analysis. One ten-line lemma in the second file runs
+its closing tactic on 225 goals, so a tactic that ran on many goals is shown to the model
+for its first two with the total count.
 
 ### Cost
 
@@ -137,9 +147,9 @@ roughly in order of value:
   explainer breaks.
 - **Ablations.** Measure what the review pass and each prompt rule contribute, over enough
   results and repeated runs to separate signal from model variance.
-- **Machine-written proofs.** The motivating target is
-  [openai/math](https://github.com/openai/math), where single proofs run to megabytes. The
-  chunking path is unit-tested but has not been run on a proof that large.
+- **Machine-written proofs at scale.** The motivating target is
+  [openai/math](https://github.com/openai/math), a 474 MB library. Nothing from it has
+  been run yet, and Lean identifiers coined by the prover still leak into statements.
 - **Term-mode proofs.** Proofs without tactics have no goal states to ground against.
 - **Model comparison.** Which models explain Lean faithfully, and at what cost, is unmeasured.
 
