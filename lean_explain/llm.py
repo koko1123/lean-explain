@@ -182,4 +182,10 @@ def chat(
     payload = send(request, config.base_url, timeout)
     if budget:
         budget.charge(config.model, payload.get("usage", {}))
-    return payload["choices"][0]["message"]["content"]
+    choice = payload["choices"][0]
+    content = choice["message"].get("content")
+    if not content:
+        # Seen when a reasoning model spends its whole output on thinking. A ValueError is
+        # what the caller retries, and nothing is cached for it.
+        raise ValueError(f"empty reply (finish_reason={choice.get('finish_reason')})")
+    return content

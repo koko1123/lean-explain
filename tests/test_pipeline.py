@@ -384,3 +384,18 @@ def test_dropped_connections_are_retried_then_reported(monkeypatch):
 
 def flaky_forever():
     raise TimeoutError("timed out")
+
+
+def test_an_empty_reply_is_retried_and_never_cached(tmp_path):
+    attempts = []
+
+    def chat(system, user, schema):
+        attempts.append(user)
+        if len(attempts) == 1:
+            raise ValueError("empty reply (finish_reason=length)")
+        return '{"statement": "s", "summary": "p"}'
+
+    cached = explain.cached_chat(chat, "m", tmp_path)
+    assert explain.ask(cached, "sys", "user", explain.FINAL_SCHEMA)["statement"] == "s"
+    assert "empty reply (finish_reason=length)" in attempts[1]
+    assert len(list(tmp_path.iterdir())) == 1

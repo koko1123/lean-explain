@@ -338,9 +338,8 @@ def ask(chat: Chat, system: str, user: str, schema: dict) -> dict:
     """Request a reply matching `schema`, retrying once with the problem spelled out."""
     problem = ""
     for _ in range(2):
-        text = chat(system, user + problem, schema)
         try:
-            reply = parse_json(text)
+            reply = parse_json(chat(system, user + problem, schema))
             missing = [key for key in schema["required"] if key not in reply]
             if missing:
                 raise ValueError(f"reply is missing {missing}")
