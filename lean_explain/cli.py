@@ -85,10 +85,23 @@ def run_eval(args: argparse.Namespace, cache: Path) -> None:
     """Explain every theorem of a module that the blueprint covers, then judge each one."""
     reference = blueprint.load(args.blueprint)
     decls = extract.extract_module(args.project, args.repl, args.module, cache)
-    targets = [d for d in decls if d.kind == "theorem" and d.name in reference]
+    theorems = {d.name for d in decls if d.kind == "theorem"}
+    # A blueprint result is scored once, over all the Lean declarations that formalize it.
+    # Results with a declaration outside this module are left out, since half a result
+    # cannot be judged equivalent to the whole.
+    groups: dict[int, tuple[blueprint.Entry, list[str]]] = {}
+    for decl in decls:
+        entry = reference.get(decl.name)
+        if entry and decl.name in theorems:
+            if all(name in theorems for name in entry.lean):
+                groups.setdefault(id(entry), (entry, entry.lean))
+            else:
+                print(f"skipping {decl.name}: its blueprint result spans other modules")
+    wanted = {name for _, names in groups.values() for name in names}
+    targets = [d for d in decls if d.name in wanted]
     if not targets:
-        raise SystemExit(f"no theorem in {args.module} is tagged in {args.blueprint}")
-    print(f"evaluating {len(targets)}: {', '.join(d.name for d in targets)}")
+        raise SystemExit(f"no blueprint result is fully formalized in {args.module}")
+    print(f"evaluating {len(groups)} results ({len(targets)} declarations)", flush=True)
 
     def cited_for(decl: extract.Decl) -> dict[str, dict]:
         plan = explain.make_plan(
@@ -103,18 +116,38 @@ def run_eval(args: argparse.Namespace, cache: Path) -> None:
     config = llm.make_config(args.base_url, args.model, args.extra_body)
     judge_config = llm.make_config(args.base_url, args.judge_model, args.extra_body)
     budget = llm.make_budget(args.budget, [config, judge_config])
-    explanations = explain.explain_in_order(
-        targets, cited_for, make_chat(config, cache, budget), args.max_chars
-    )
     judge_chat = make_chat(judge_config, cache, budget)
-    verdicts = [evaluate.judge(reference[e.name], e, judge_chat) for e in explanations]
+    done: dict[str, explain.Explanation] = {}
+    explanations: list[explain.Explanation] = []
+    verdicts: list[evaluate.Verdict] = []
+    judged: list[list[explain.Explanation]] = []
+    stopped = None
+    try:
+        # Judge each result as soon as its last declaration is explained, so a capped run
+        # keeps what it paid for.
+        for explanation in explain.iter_explanations(
+            targets, cited_for, make_chat(config, cache, budget), args.max_chars
+        ):
+            done[explanation.name] = explanation
+            for key, (entry, names) in list(groups.items()):
+                if not all(name in done for name in names):
+                    continue
+                del groups[key]
+                parts = [done[name] for name in names]
+                verdict = evaluate.judge(entry, parts, judge_chat)
+                verdicts.append(verdict)
+                judged.append(parts)
+                explanations.extend(parts)
+                coverage = "n/a" if verdict.coverage is None else f"{verdict.coverage:.0%}"
+                print(
+                    f"  {verdict.name}: statement {verdict.statement_verdict}, "
+                    f"coverage {coverage}, errors {len(verdict.errors)}",
+                    flush=True,
+                )
+    except llm.BudgetExceeded as error:
+        stopped = str(error)
+        print(f"stopped with {len(groups)} results unjudged: {stopped}")
 
-    for verdict, explanation in zip(verdicts, explanations, strict=True):
-        coverage = "n/a" if verdict.coverage is None else f"{verdict.coverage:.0%}"
-        print(
-            f"  {verdict.name}: statement {verdict.statement_verdict}, coverage {coverage}, "
-            f"errors {len(verdict.errors)}, grounding {explanation.grounding:.0%}"
-        )
     summary = evaluate.summarize(verdicts, explanations)
     report = {
         "module": args.module,
@@ -122,10 +155,12 @@ def run_eval(args: argparse.Namespace, cache: Path) -> None:
         "judge": judge_config.model,
         "prompt_version": explain.PROMPT_VERSION,
         "judge_version": evaluate.JUDGE_VERSION,
+        "unjudged": len(groups),
+        "stopped": stopped,
         "summary": summary,
         "results": [
-            {**asdict(v), "coverage": v.coverage, "explanation": asdict(e)}
-            for v, e in zip(verdicts, explanations, strict=True)
+            {**asdict(v), "coverage": v.coverage, "explanations": [asdict(e) for e in parts]}
+            for v, parts in zip(verdicts, judged, strict=True)
         ],
     }
     out = args.out / config.model.replace("/", "_")
@@ -133,7 +168,8 @@ def run_eval(args: argparse.Namespace, cache: Path) -> None:
     path = out / f"eval-{args.module}.json"
     path.write_text(json.dumps(report, ensure_ascii=False, indent=2))
     print(json.dumps(summary))
-    print(f"wrote {path} (spent ${budget.spent_usd:.2f})")
+    print(f"wrote {path}")
+    print(budget.report())
 
 
 def main() -> None:
@@ -199,6 +235,9 @@ def main() -> None:
                 f"tactics={len(decl.steps)}  project deps={len(deps)}"
             )
     elif args.command == "explain":
-        run_explain(args, cache)
+        try:
+            run_explain(args, cache)
+        except llm.BudgetExceeded as error:
+            raise SystemExit(str(error)) from error
     else:
         run_eval(args, cache)

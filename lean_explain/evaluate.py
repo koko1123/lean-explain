@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from lean_explain.blueprint import Entry
 from lean_explain.explain import TEXT, Chat, Explanation, ask, object_schema
 
-JUDGE_VERSION = "1"
+JUDGE_VERSION = "2"
 
 JUDGE_SYSTEM = """\
 You are refereeing an English explanation of a formal (Lean 4) proof against the
@@ -13,13 +13,18 @@ human-written blueprint for the same result. Your verdicts score an automatic ex
 so be strict about mathematics and indifferent to style.
 
 You receive the blueprint's statement and proof in LaTeX (<reference_statement>,
-<reference_proof>) and the explainer's statement, summary, and steps
-(<candidate_statement>, <candidate_explanation>).
+<reference_proof>) and the explainer's output in <candidate>. One blueprint result is
+often formalized as several Lean declarations, each proving one part of it; the candidate
+then has one <part> per declaration, and you judge the parts together as a single account
+of the result.
 
 Judge the statement. The blueprint is informal: it leaves out technical hypotheses that a
 formalization must carry (measurability, finite range, a measure being a probability
 measure, the ambient group being finite or countable) and it may name objects
-differently. Do not penalise the candidate for stating such hypotheses or for different
+differently. A formal statement can also be more general in ways that carry no
+mathematical content, such as allowing a finite measure where the blueprint has a
+probability measure, or omitting a measurability hypothesis because the formal definition
+assigns a default value. Do not penalise the candidate for any of this or for different
 notation. Decide whether the two statements make the same mathematical claim once those
 conventions are accounted for:
 - equivalent: the same claim.
@@ -76,19 +81,26 @@ class Verdict:
         return sum(CREDIT[s["covered"]] for s in self.reference_steps) / len(self.reference_steps)
 
 
-def judge(entry: Entry, explanation: Explanation, chat: Chat) -> Verdict:
+def render_part(explanation: Explanation) -> str:
     steps = "\n".join(f"{i}. {s.explanation}" for i, s in enumerate(explanation.steps, 1))
+    return (
+        f'<part lean="{explanation.name}">\n<statement>\n{explanation.statement}\n</statement>\n'
+        f"<summary>\n{explanation.summary}\n</summary>\n<steps>\n{steps}\n</steps>\n</part>"
+    )
+
+
+def judge(entry: Entry, explanations: list[Explanation], chat: Chat) -> Verdict:
+    """Judge the explanations of every Lean declaration that formalizes one blueprint result."""
+    parts = "\n".join(render_part(e) for e in explanations)
     user = (
         f"<reference_statement>\n{entry.statement}\n</reference_statement>\n\n"
         f"<reference_proof>\n{entry.proof or '(none)'}\n</reference_proof>\n\n"
-        f"<candidate_statement>\n{explanation.statement}\n</candidate_statement>\n\n"
-        f"<candidate_explanation>\nSummary: {explanation.summary}\n\nSteps:\n{steps}\n"
-        "</candidate_explanation>\n\n"
+        f"<candidate>\n{parts}\n</candidate>\n\n"
         "Referee the candidate against the reference."
     )
     reply = ask(chat, JUDGE_SYSTEM, user, JUDGE_SCHEMA)
     return Verdict(
-        explanation.name,
+        " + ".join(e.name for e in explanations),
         reply["statement_verdict"],
         reply["statement_reasoning"],
         reply["reference_steps"],

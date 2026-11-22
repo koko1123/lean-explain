@@ -3,13 +3,13 @@
 import hashlib
 import json
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from lean_explain.extract import Decl, Step
 
-PROMPT_VERSION = "4"
+PROMPT_VERSION = "5"
 
 SYSTEM = """\
 You are writing the reader's guide to a formal proof. The reader is a research
@@ -33,6 +33,14 @@ Follow the proof as written. Report the steps Lean took, in the order it took th
 use the goal states to say what each step establishes: the goal before the next tactic
 shows what the current one achieved. If the proof takes an unusual route, describe that
 route rather than the textbook one, because the reader wants to know what this proof does.
+
+Assert only what the record supports. The goal states and the statements of the cited
+results tell you what each step establishes; they often do not tell you why an automated
+tactic (simp, linarith, omega, positivity) succeeded. When the reason is not visible, say
+what was closed and from which facts ("the remaining inequality follows by linear
+arithmetic from the two bounds above") instead of supplying an argument of your own. A
+plausible reason that the proof does not use, or a slogan that is not literally true,
+misleads a reader who is checking the proof.
 
 One step is one mathematical move. Merge runs of bookkeeping tactics (introducing
 variables, unfolding notation, reshaping a goal, discharging measurability or positivity
@@ -415,12 +423,12 @@ def explain_decl(
     )
 
 
-def explain_in_order(
+def iter_explanations(
     decls: list[Decl],
     cited_for: Callable[[Decl], dict[str, dict]],
     chat: Chat,
     max_chars: int = 200_000,
-) -> list[Explanation]:
+) -> Iterator[Explanation]:
     """Explain declarations in the given order, carrying statements and notation forward."""
     known: dict[str, Explanation] = {}
     notation: dict[str, dict] = {}
@@ -429,12 +437,12 @@ def explain_in_order(
         known[decl.name] = explanation
         for entry in explanation.notation:
             notation.setdefault(entry["lean"], entry)
-    return [known[decl.name] for decl in decls]
+        yield explanation
 
 
 def explain_plan(plan: Plan, chat: Chat, max_chars: int = 200_000) -> list[Explanation]:
     """Explain every planned declaration, dependencies first."""
-    return explain_in_order(plan.order, lambda decl: plan.cited, chat, max_chars)
+    return list(iter_explanations(plan.order, lambda decl: plan.cited, chat, max_chars))
 
 
 def cached_chat(chat: Chat, model: str, cache_dir: Path) -> Chat:

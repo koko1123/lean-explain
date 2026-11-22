@@ -57,6 +57,10 @@ def make_config(
     return LLMConfig(base_url=base_url, model=model, api_key=api_key or None, extra_body=extra_body)
 
 
+class BudgetExceeded(Exception):
+    """Raised before a request that would start after the spending cap is reached."""
+
+
 class Budget:
     """A spending cap in US dollars, enforced before each request.
 
@@ -68,19 +72,34 @@ class Budget:
         self.limit_usd = limit_usd
         self.prices = prices
         self.spent_usd = 0.0
+        self.by_model: dict[str, dict] = {}
 
     def check(self) -> None:
         if self.spent_usd >= self.limit_usd:
-            raise SystemExit(
+            raise BudgetExceeded(
                 f"Spending cap reached: ${self.spent_usd:.2f} of ${self.limit_usd:.2f}. "
                 "Finished requests are cached, so a rerun with a higher --budget resumes."
             )
 
     def charge(self, model: str, usage: dict) -> None:
         price_in, price_out = self.prices.get(model, (0.0, 0.0))
-        self.spent_usd += (
-            usage.get("prompt_tokens", 0) * price_in + usage.get("completion_tokens", 0) * price_out
-        ) / 1e6
+        tokens_in, tokens_out = usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)
+        cost = (tokens_in * price_in + tokens_out * price_out) / 1e6
+        self.spent_usd += cost
+        row = self.by_model.setdefault(model, {"calls": 0, "in": 0, "out": 0, "usd": 0.0})
+        row["calls"] += 1
+        row["in"] += tokens_in
+        row["out"] += tokens_out
+        row["usd"] += cost
+
+    def report(self) -> str:
+        """One line per model: calls, tokens in and out, and cost."""
+        lines = [
+            f"  {model}: {row['calls']} calls, {row['in']:,} tokens in, "
+            f"{row['out']:,} out, ${row['usd']:.2f}"
+            for model, row in self.by_model.items()
+        ]
+        return "\n".join([f"spent ${self.spent_usd:.2f} of ${self.limit_usd:.2f}", *lines])
 
 
 def venice_prices() -> dict[str, tuple[float, float]]:

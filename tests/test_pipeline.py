@@ -278,10 +278,13 @@ def test_judge_scores_statement_and_step_coverage():
             }
         )
 
-    verdict = evaluate.judge(entry, explanation, chat)
+    other = explain.Explanation("other_name", "M", "second part", "idea2", [])
+    verdict = evaluate.judge(entry, [explanation, other], chat)
     assert "<reference_proof>\nTake independent copies." in prompts[0]
-    assert "<candidate_statement>\nstmt" in prompts[0] and "1. copies" in prompts[0]
-    assert verdict.coverage == 0.5
+    assert '<part lean="sub_mem_symmGroup">\n<statement>\nstmt' in prompts[0]
+    assert '<part lean="other_name">\n<statement>\nsecond part' in prompts[0]
+    assert "1. copies" in prompts[0]
+    assert verdict.name == "sub_mem_symmGroup + other_name" and verdict.coverage == 0.5
     summary = evaluate.summarize([verdict], [explanation])
     assert summary == {
         "results": 1,
@@ -316,7 +319,8 @@ def test_budget_charges_by_token_price_and_stops_at_the_cap():
     budget.charge("priced", {"prompt_tokens": 150_000})
     try:
         budget.check()
-    except SystemExit as stop:
+    except llm.BudgetExceeded as stop:
         assert "Spending cap reached: $1.00 of $1.00" in str(stop)
     else:
         raise AssertionError("the cap did not stop the run")
+    assert "priced: 2 calls, 250,000 tokens in, 50,000 out, $1.00" in budget.report()
