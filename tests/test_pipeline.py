@@ -304,3 +304,19 @@ def test_html_pairs_each_lean_block_with_the_step_that_cites_it():
     assert "Step 1 \u00b7 line 5" in even and "1 step(s) cited lines outside" in even
     assert "The sum of two even numbers" not in page
     assert '<span class="kw">exact</span> toy_even' in use
+
+
+def test_budget_charges_by_token_price_and_stops_at_the_cap():
+    budget = llm.Budget(1.0, {"priced": (2.0, 10.0)})
+    budget.charge("priced", {"prompt_tokens": 100_000, "completion_tokens": 50_000})
+    assert round(budget.spent_usd, 6) == 0.7
+    budget.check()
+    budget.charge("local-model", {"prompt_tokens": 10**9, "completion_tokens": 10**9})
+    assert round(budget.spent_usd, 6) == 0.7
+    budget.charge("priced", {"prompt_tokens": 150_000})
+    try:
+        budget.check()
+    except SystemExit as stop:
+        assert "Spending cap reached: $1.00 of $1.00" in str(stop)
+    else:
+        raise AssertionError("the cap did not stop the run")

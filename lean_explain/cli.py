@@ -42,9 +42,9 @@ def fetch(url: str, rev: str | None, workspace: Path) -> None:
     print(f"project: {project}\nrepl:    {repl / '.lake/build/bin/repl'}")
 
 
-def make_chat(config: llm.LLMConfig, cache: Path) -> explain.Chat:
+def make_chat(config: llm.LLMConfig, cache: Path, budget: llm.Budget) -> explain.Chat:
     return explain.cached_chat(
-        lambda system, user, schema: llm.chat(config, system, user, schema),
+        lambda system, user, schema: llm.chat(config, system, user, schema, budget),
         config.model,
         cache / "llm",
     )
@@ -64,7 +64,8 @@ def run_explain(args: argparse.Namespace, cache: Path) -> None:
         return
 
     config = llm.make_config(args.base_url, args.model, args.extra_body)
-    explanations = explain.explain_plan(plan, make_chat(config, cache), args.max_chars)
+    budget = llm.make_budget(args.budget, [config])
+    explanations = explain.explain_plan(plan, make_chat(config, cache, budget), args.max_chars)
     # One directory per model, so a run with another model never overwrites this one.
     out = args.out / config.model.replace("/", "_")
     out.mkdir(parents=True, exist_ok=True)
@@ -74,7 +75,10 @@ def run_explain(args: argparse.Namespace, cache: Path) -> None:
     (out / f"{args.decl}.json").write_text(json.dumps(side, ensure_ascii=False, indent=2))
     with (out / "pairs.jsonl").open("a") as handle:
         handle.write(assemble.pairs_jsonl(plan, explanations))
-    print(f"wrote {out / f'{args.decl}.md'} and .html (grounding {side['grounding']:.0%})")
+    print(
+        f"wrote {out / f'{args.decl}.md'} and .html "
+        f"(grounding {side['grounding']:.0%}, spent ${budget.spent_usd:.2f})"
+    )
 
 
 def run_eval(args: argparse.Namespace, cache: Path) -> None:
@@ -97,11 +101,12 @@ def run_eval(args: argparse.Namespace, cache: Path) -> None:
         return plan.cited
 
     config = llm.make_config(args.base_url, args.model, args.extra_body)
-    explanations = explain.explain_in_order(
-        targets, cited_for, make_chat(config, cache), args.max_chars
-    )
     judge_config = llm.make_config(args.base_url, args.judge_model, args.extra_body)
-    judge_chat = make_chat(judge_config, cache)
+    budget = llm.make_budget(args.budget, [config, judge_config])
+    explanations = explain.explain_in_order(
+        targets, cited_for, make_chat(config, cache, budget), args.max_chars
+    )
+    judge_chat = make_chat(judge_config, cache, budget)
     verdicts = [evaluate.judge(reference[e.name], e, judge_chat) for e in explanations]
 
     for verdict, explanation in zip(verdicts, explanations, strict=True):
@@ -128,7 +133,7 @@ def run_eval(args: argparse.Namespace, cache: Path) -> None:
     path = out / f"eval-{args.module}.json"
     path.write_text(json.dumps(report, ensure_ascii=False, indent=2))
     print(json.dumps(summary))
-    print(f"wrote {path}")
+    print(f"wrote {path} (spent ${budget.spent_usd:.2f})")
 
 
 def main() -> None:
@@ -155,6 +160,12 @@ def main() -> None:
         cmd.add_argument("--base-url", help="OpenAI-compatible endpoint, e.g. a local server")
         cmd.add_argument("--model")
         cmd.add_argument("--extra-body", type=json.loads, help="JSON merged into each request body")
+        cmd.add_argument(
+            "--budget",
+            type=float,
+            default=2.0,
+            help="spending cap in USD for this run; enforced for Venice models",
+        )
         cmd.add_argument(
             "--max-chars",
             type=int,

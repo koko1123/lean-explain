@@ -57,8 +57,60 @@ def make_config(
     return LLMConfig(base_url=base_url, model=model, api_key=api_key or None, extra_body=extra_body)
 
 
-def chat(config: LLMConfig, system: str, user: str, schema: dict, timeout: float = 3600.0) -> str:
+class Budget:
+    """A spending cap in US dollars, enforced before each request.
+
+    Prices are per million tokens. A model without a price is treated as free, which is
+    right for a local server and means the cap only binds on priced endpoints.
+    """
+
+    def __init__(self, limit_usd: float, prices: dict[str, tuple[float, float]]):
+        self.limit_usd = limit_usd
+        self.prices = prices
+        self.spent_usd = 0.0
+
+    def check(self) -> None:
+        if self.spent_usd >= self.limit_usd:
+            raise SystemExit(
+                f"Spending cap reached: ${self.spent_usd:.2f} of ${self.limit_usd:.2f}. "
+                "Finished requests are cached, so a rerun with a higher --budget resumes."
+            )
+
+    def charge(self, model: str, usage: dict) -> None:
+        price_in, price_out = self.prices.get(model, (0.0, 0.0))
+        self.spent_usd += (
+            usage.get("prompt_tokens", 0) * price_in + usage.get("completion_tokens", 0) * price_out
+        ) / 1e6
+
+
+def venice_prices() -> dict[str, tuple[float, float]]:
+    """Input and output prices per million tokens for every Venice text model."""
+    with urllib.request.urlopen(f"{VENICE_BASE_URL}/models", timeout=30) as response:
+        models = json.load(response)["data"]
+    prices = {}
+    for model in models:
+        pricing = model.get("model_spec", {}).get("pricing", {})
+        if "input" in pricing and "output" in pricing:
+            prices[model["id"]] = (pricing["input"]["usd"], pricing["output"]["usd"])
+    return prices
+
+
+def make_budget(limit_usd: float, configs: list[LLMConfig]) -> Budget:
+    priced = any(config.base_url == VENICE_BASE_URL for config in configs)
+    return Budget(limit_usd, venice_prices() if priced else {})
+
+
+def chat(
+    config: LLMConfig,
+    system: str,
+    user: str,
+    schema: dict,
+    budget: Budget | None = None,
+    timeout: float = 3600.0,
+) -> str:
     """Send one request and return the reply text, constrained to `schema` by the server."""
+    if budget:
+        budget.check()
     body = {
         **config.extra_body,
         "model": config.model,
@@ -83,4 +135,6 @@ def chat(config: LLMConfig, system: str, user: str, schema: dict, timeout: float
     except urllib.error.HTTPError as error:
         detail = error.read().decode(errors="replace")[:500]
         raise SystemExit(f"{config.base_url} returned HTTP {error.code}: {detail}") from error
+    if budget:
+        budget.charge(config.model, payload.get("usage", {}))
     return payload["choices"][0]["message"]["content"]
