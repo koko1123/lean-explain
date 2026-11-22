@@ -34,8 +34,9 @@ proof instead of explaining the formal one.
 
 ### Against a human-written blueprint
 
-Two modules of [teorth/pfr](https://github.com/teorth/pfr) have been evaluated against
-the project's blueprint, generated with `deepseek-v4-1-flash-1017-ultrafast` and judged by
+Two modules of [teorth/pfr](https://github.com/teorth/pfr) and one of
+[fpvandoorn/carleson](https://github.com/fpvandoorn/carleson) have been evaluated against
+their blueprints, generated with `deepseek-v4-1-flash-1017-ultrafast` and judged by
 `gemini-4-carbon`. A blueprint result is scored once, over all the Lean declarations that
 formalize it.
 
@@ -43,6 +44,8 @@ formalize it.
 |---|---|---|---|---|---|
 | `PFR.HundredPercent` | 4 | 4 | 100% | 1 | 100% |
 | `PFR.ForMathlib.Entropy.RuzsaDist` | 15 of 16 | 14 | 94% | 3 | 100% |
+| `Carleson.ForestOperator.AlmostOrthogonality` | 4 | 3 | 92% | 3 | 100% |
+| The same Carleson module, with `--review` | 4 | 4 | 100% | 1 | 100% |
 
 The judge has not been calibrated against human labels, so these are not benchmark
 numbers. What the second module showed:
@@ -54,7 +57,13 @@ numbers. What the second module showed:
 - The one statement judged different is a real gap between the formalization and the
   blueprint: the Lean lemmas drop a characteristic 2 hypothesis and prove only the
   inequalities, where the blueprint also states two equalities.
-- The `HundredPercent` row predates the last prompt and scoring changes.
+- On Carleson the first run left a named constant unexpanded, misnamed a project object,
+  and reversed "smaller" and "larger". The second Carleson row adds three changes at once:
+  cited definitions keep their doc comments, the prompt asks for a constant's formula, and
+  `--review` has the model check its draft against the record. It is one run of four
+  results, so it does not show which change helped or that the gain is stable.
+- The rows were produced at different prompt versions, so they are not comparable with
+  each other.
 
 ### On a machine-written proof
 
@@ -95,6 +104,9 @@ uv run lean-explain eval --project workspace/pfr --repl $REPL \
   --module PFR.HundredPercent --blueprint workspace/pfr/blueprint/src/chapter/100_percent.tex
 ```
 
+`--review` adds a second request per lemma in which the model checks its draft against the
+tactic record and corrects it; it roughly doubles the generator cost.
+
 `explain` writes Markdown, a side-by-side HTML page, a JSON sidecar, and `pairs.jsonl`
 (one Lean and English pair per lemma) to `out/<model>/`. `--dry-run` prints the plan and
 stops before calling the model.
@@ -120,8 +132,11 @@ roughly in order of value:
 
 - **Judge calibration.** Hand-label 20 to 50 explanations and measure how often the judge
   agrees, before any score here is trusted.
-- **More reference data.** Run the evaluation over the rest of the PFR blueprint and other
-  blueprint projects (Carleson, PNT+, FLT), and find where the explainer breaks.
+- **More reference data.** Run the evaluation over the rest of the PFR and Carleson
+  blueprints and other blueprint projects (PNT+, FLT, sphere eversion), and find where the
+  explainer breaks.
+- **Ablations.** Measure what the review pass and each prompt rule contribute, over enough
+  results and repeated runs to separate signal from model variance.
 - **Machine-written proofs.** The motivating target is
   [openai/math](https://github.com/openai/math), where single proofs run to megabytes. The
   chunking path is unit-tested but has not been run on a proof that large.
