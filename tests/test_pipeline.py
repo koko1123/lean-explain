@@ -347,3 +347,40 @@ def test_review_sends_the_draft_back_and_uses_the_corrected_reply():
     assert len(prompts) == 2 and "<draft>" in prompts[1] and "draft step" in prompts[1]
     assert prompts[1].rstrip().endswith(explain.REVIEW_TASK)
     assert result.steps[0].explanation == "corrected step"
+
+
+def test_dropped_connections_are_retried_then_reported(monkeypatch):
+    calls = []
+
+    class Reply:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self, *args):
+            return b'{"ok": true}'
+
+    def flaky(request, timeout):
+        calls.append(timeout)
+        if len(calls) < 3:
+            raise ConnectionResetError("reset by peer")
+        return Reply()
+
+    monkeypatch.setattr(llm.urllib.request, "urlopen", flaky)
+    waits = []
+    assert llm.send("request", "http://x", 1.0, sleep=waits.append) == {"ok": True}
+    assert len(calls) == 3 and waits == [5, 10]
+
+    monkeypatch.setattr(llm.urllib.request, "urlopen", lambda request, timeout: flaky_forever())
+    try:
+        llm.send("request", "http://x", 1.0, attempts=2, sleep=waits.append)
+    except SystemExit as stop:
+        assert "unreachable after 2 tries" in str(stop)
+    else:
+        raise AssertionError("a dead endpoint did not stop the run")
+
+
+def flaky_forever():
+    raise TimeoutError("timed out")

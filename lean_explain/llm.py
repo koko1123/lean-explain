@@ -2,8 +2,10 @@
 
 import json
 import os
+import time
 import urllib.error
 import urllib.request
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -119,13 +121,42 @@ def make_budget(limit_usd: float, configs: list[LLMConfig]) -> Budget:
     return Budget(limit_usd, venice_prices() if priced else {})
 
 
+RETRY_STATUS = {429, 500, 502, 503, 504}
+
+
+def send(
+    request: urllib.request.Request,
+    base_url: str,
+    timeout: float,
+    attempts: int = 4,
+    sleep: Callable[[float], None] = time.sleep,
+) -> dict:
+    """Send a request, retrying dropped connections and overloaded-server responses."""
+    for attempt in range(attempts):
+        last = attempt == attempts - 1
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                return json.load(response)
+        except urllib.error.HTTPError as error:
+            detail = error.read().decode(errors="replace")[:500]
+            if error.code not in RETRY_STATUS or last:
+                raise SystemExit(f"{base_url} returned HTTP {error.code}: {detail}") from error
+        except (urllib.error.URLError, ConnectionError, TimeoutError) as error:
+            if last:
+                raise SystemExit(
+                    f"{base_url} unreachable after {attempts} tries: {error}"
+                ) from error
+        sleep(5 * 2**attempt)
+    raise AssertionError("unreachable")
+
+
 def chat(
     config: LLMConfig,
     system: str,
     user: str,
     schema: dict,
     budget: Budget | None = None,
-    timeout: float = 3600.0,
+    timeout: float = 900.0,
 ) -> str:
     """Send one request and return the reply text, constrained to `schema` by the server."""
     if budget:
@@ -148,12 +179,7 @@ def chat(
     request = urllib.request.Request(
         f"{config.base_url}/chat/completions", data=json.dumps(body).encode(), headers=headers
     )
-    try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            payload = json.load(response)
-    except urllib.error.HTTPError as error:
-        detail = error.read().decode(errors="replace")[:500]
-        raise SystemExit(f"{config.base_url} returned HTTP {error.code}: {detail}") from error
+    payload = send(request, config.base_url, timeout)
     if budget:
         budget.charge(config.model, payload.get("usage", {}))
     return payload["choices"][0]["message"]["content"]
