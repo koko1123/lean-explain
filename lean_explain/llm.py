@@ -29,7 +29,7 @@ def load_env_file(path: Path) -> None:
 
 
 VENICE_BASE_URL = "https://api.venice.ai/api/v1"
-VENICE_MODEL = "deepseek-v4-pro"
+VENICE_MODEL = "deepseek-v4-1-flash-1017-ultrafast"
 # Venice adds its own system prompt unless told not to.
 VENICE_EXTRA_BODY = {"venice_parameters": {"include_venice_system_prompt": False}}
 
