@@ -80,8 +80,9 @@ the same content with spans, which is what the judge and the JSONL export read.
 
 The orchestrator is Python 3.12 managed with `uv` and has no runtime dependencies. The
 model is reached through any OpenAI-compatible chat completions endpoint; the default is
-OpenRouter, so the generator and the judge can be different vendors' models behind one
-key. The endpoint, model ID, and API key are read from the environment or `.env.local`,
+Venice, which serves open-weight and proprietary models behind one key, so the generator
+and the judge can be different vendors' models. A local llama.cpp server works the same
+way without a key. The endpoint, model ID, and API key are read from the environment or `.env.local`,
 and the tool never writes them.
 
 ## Evaluation

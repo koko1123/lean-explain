@@ -63,6 +63,17 @@ def main() -> None:
     explain_cmd.add_argument(
         "--dry-run", action="store_true", help="print the plan and stop before calling the model"
     )
+    explain_cmd.add_argument("--base-url", help="OpenAI-compatible endpoint, e.g. a local server")
+    explain_cmd.add_argument("--model")
+    explain_cmd.add_argument(
+        "--extra-body", type=json.loads, help="JSON merged into each request body"
+    )
+    explain_cmd.add_argument(
+        "--max-chars",
+        type=int,
+        default=200_000,
+        help="tactic record size per request; lower it for small context windows",
+    )
 
     args = parser.parse_args()
     if args.command == "fetch":
@@ -92,11 +103,11 @@ def main() -> None:
     if args.dry_run:
         return
 
-    config = llm.config_from_env()
+    config = llm.make_config(args.base_url, args.model, args.extra_body)
     chat = explain.cached_chat(
         lambda system, user: llm.chat(config, system, user), config.model, cache / "llm"
     )
-    explanations = explain.explain_plan(plan, chat)
+    explanations = explain.explain_plan(plan, chat, args.max_chars)
     args.out.mkdir(parents=True, exist_ok=True)
     stem = args.decl.replace("/", "_")
     (args.out / f"{stem}.md").write_text(assemble.render_markdown(plan, explanations))
