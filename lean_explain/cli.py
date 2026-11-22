@@ -108,6 +108,8 @@ def main() -> None:
         lambda system, user: llm.chat(config, system, user), config.model, cache / "llm"
     )
     explanations = explain.explain_plan(plan, chat, args.max_chars)
+    # One directory per model, so a run with another model never overwrites this one.
+    args.out = args.out / config.model.replace("/", "_")
     args.out.mkdir(parents=True, exist_ok=True)
     stem = args.decl.replace("/", "_")
     (args.out / f"{stem}.md").write_text(assemble.render_markdown(plan, explanations))
