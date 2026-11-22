@@ -78,7 +78,9 @@ the extracted record and the prompt version, so a rerun pays only for what chang
 **Assemble.** The output for a target is one Markdown file plus a JSON sidecar holding
 the same content with spans, which is what the judge and the JSONL export read.
 
-The orchestrator is Python 3.12 managed with `uv` and has no runtime dependencies. The
+The orchestrator is Python 3.12 managed with `uv`. Its one runtime dependency is
+`leanclient`, which talks to the Lean language server to get term goals for proofs that
+have no tactics. The
 model is reached through any OpenAI-compatible chat completions endpoint; the default is
 Venice, which serves open-weight and proprietary models behind one key, so the generator
 and the judge can be different vendors' models. A local llama.cpp server works the same

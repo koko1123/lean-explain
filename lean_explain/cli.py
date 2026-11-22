@@ -6,7 +6,7 @@ import subprocess
 from dataclasses import asdict
 from pathlib import Path
 
-from lean_explain import assemble, blueprint, evaluate, explain, extract, html, llm
+from lean_explain import assemble, blueprint, evaluate, explain, extract, html, llm, termgoals
 
 VENICE_JUDGE_MODEL = "gemini-4-carbon"
 
@@ -62,6 +62,7 @@ def run_explain(args: argparse.Namespace, cache: Path) -> None:
     print(f"cite    ({len(plan.cited)}): {', '.join(plan.cited)}")
     if args.dry_run:
         return
+    termgoals.fill(args.project, plan.order, cache)
 
     config = llm.make_config(args.base_url, args.model, args.extra_body)
     budget = llm.make_budget(args.budget, [config])
@@ -106,6 +107,7 @@ def run_eval(args: argparse.Namespace, cache: Path) -> None:
     if not targets:
         raise SystemExit(f"no blueprint result is fully formalized in {args.module}")
     print(f"evaluating {len(groups)} results ({len(targets)} declarations)", flush=True)
+    termgoals.fill(args.project, targets, cache)
 
     def cited_for(decl: extract.Decl) -> dict[str, dict]:
         plan = explain.make_plan(

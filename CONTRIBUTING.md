@@ -54,9 +54,9 @@ what is wrong. A step that is false is more useful to us than one that is awkwar
 
 Open problems, each small enough to start on:
 
-- **Term-mode proofs.** A proof with no tactics has no goal states to ground against.
-  Extract something usable from the elaborated term, such as the expected type at each
-  application.
+- **Finer term-mode grounding.** `lean_explain/termgoals.py` asks the language server for
+  the expected type at the start of each line of a term-mode proof. Asking at each
+  application would ground one-line proofs with several nested applications.
 - **Extraction from info trees.** The tactic record comes from the REPL's `allTactics`.
   Reading info trees directly may give the goal after a tactic and handle more cases.
 - **Choosing what to explain.** `--depth` takes every project lemma to a fixed depth. In a

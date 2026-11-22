@@ -10,7 +10,7 @@ from pathlib import Path
 
 from lean_explain.extract import Decl, Step
 
-PROMPT_VERSION = "8"
+PROMPT_VERSION = "9"
 
 SYSTEM = """\
 You are writing the reader's guide to a formal proof. The reader is a research
@@ -30,6 +30,10 @@ You receive one declaration at a time:
   Lean reported immediately before it ran. Indentation shows nesting: an indented tactic
   runs inside the one above it. A tactic that ran on many goals, as in a case analysis,
   is shown for its first two goals with the total count.
+- <term_record>, in place of the tactic record when the proof is a term and not a tactic
+  block: each line of the proof term, with the type Lean expected at the start of that
+  line. Treat each line or group of lines as a step, and use the expected types to say
+  what each application has to produce.
 
 Follow the proof as written. Report the steps Lean took, in the order it took them, and
 use the goal states to say what each step establishes: the goal before the next tactic
@@ -282,6 +286,12 @@ def span(step: Step) -> tuple[int, int, int, int]:
     return (step.line, step.col, step.end_line, step.end_col)
 
 
+def render_term_step(step: Step) -> str:
+    return (
+        f"[line {step.line}] {step.tactic}\nexpected type at the start of this line:\n{step.goals}"
+    )
+
+
 def render_step(step: Step, depth: int, runs: int = 1) -> str:
     indent = "  " * depth
     tactic = step.tactic if len(step.tactic) <= 400 else step.tactic[:400] + " ..."
@@ -474,22 +484,21 @@ def explain_decl(
     notation = {} if notation is None else notation
     identifiers = project_identifiers(decl, decl.module.split(".")[0])
     header = render_header(decl, known, cited, notation)
-    chunks = chunk_steps(decl.steps, max_chars)
+    chunks = [[]] if decl.term_mode else chunk_steps(decl.steps, max_chars)
     if len(chunks) == 1:
-        record = "\n\n".join(render_step(*r) for r in chunks[0]) or "(term-mode proof)"
-        reply = ask(
-            chat,
-            SYSTEM,
-            f"{header}<tactic_record>\n{record}\n</tactic_record>\n\n{FULL_TASK}",
-            FULL_SCHEMA,
-        )
+        if decl.term_mode:
+            body = "\n\n".join(render_term_step(step) for step in decl.steps)
+            record = f"<term_record>\n{body}\n</term_record>"
+        else:
+            body = "\n\n".join(render_step(*r) for r in chunks[0])
+            record = f"<tactic_record>\n{body or '(term-mode proof)'}\n</tactic_record>"
+        reply = ask(chat, SYSTEM, f"{header}{record}\n\n{FULL_TASK}", FULL_SCHEMA)
         if review:
             draft = json.dumps(reply, ensure_ascii=False, indent=1)
             reply = ask(
                 chat,
                 SYSTEM,
-                f"{header}<tactic_record>\n{record}\n</tactic_record>\n\n"
-                f"<draft>\n{draft}\n</draft>\n\n{REVIEW_TASK}",
+                f"{header}{record}\n\n<draft>\n{draft}\n</draft>\n\n{REVIEW_TASK}",
                 FULL_SCHEMA,
             )
         leaks = find_leaks(reply_texts(reply), identifiers)

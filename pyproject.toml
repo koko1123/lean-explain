@@ -5,7 +5,9 @@ description = "Step-by-step natural-language explanations of Lean 4 proofs, grou
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "leanclient>=0.13.2",
+]
 
 [project.scripts]
 lean-explain = "lean_explain.cli:main"

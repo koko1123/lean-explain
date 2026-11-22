@@ -25,6 +25,9 @@ Lean.
 
 1. **Extract.** It builds the module, runs the Lean REPL over it, and records every tactic
    with the goal state before it, plus the project lemmas and definitions each proof uses.
+   A proof written as a term has no tactics, so for those it asks the Lean language server,
+   through [leanclient](https://github.com/oOo0oOo/leanclient), what type Lean expected at
+   each line of the term.
 2. **Plan.** It walks the dependency graph from the target. Project lemmas within `--depth`
    are explained first; everything deeper is cited by its Lean statement.
 3. **Explain.** A model explains each lemma bottom-up from that record. Each lemma's English
@@ -177,7 +180,8 @@ with your own key or a local model. The design and evaluation plan are in
   been run yet.
 - **Going deep.** Explaining a whole 8,000-declaration proof, not its top two levels,
   needs a way to choose which lemmas matter and to summarise the rest.
-- **Term-mode proofs.** Proofs without tactics have no goal states to ground against.
+- **Finer term-mode grounding.** Term-mode proofs are grounded one line at a time. Term
+  goals at each application, not each line, would say more.
 - **Model comparison.** Which models explain Lean faithfully, and at what cost, is unmeasured.
 
 Issues and pull requests are welcome.

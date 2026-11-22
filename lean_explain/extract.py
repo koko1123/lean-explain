@@ -40,6 +40,8 @@ class Decl:
     source: str
     deps: list[Dep] = field(default_factory=list)
     steps: list[Step] = field(default_factory=list)
+    # True when `steps` holds term goals for a term-mode proof instead of tactics.
+    term_mode: bool = False
 
 
 def lake_env() -> dict[str, str]:

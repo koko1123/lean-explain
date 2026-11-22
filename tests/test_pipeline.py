@@ -1,6 +1,6 @@
 import json
 
-from lean_explain import assemble, blueprint, evaluate, explain, html, llm
+from lean_explain import assemble, blueprint, evaluate, explain, html, llm, termgoals
 from lean_explain.extract import assign_steps, build_decls
 
 SOURCE = """import Mathlib.Tactic
@@ -474,3 +474,80 @@ def test_lean_identifiers_inside_mathematics_are_found_and_repaired_once():
     result = explain.explain_decl(use, {}, {}, chat)
     assert len(prompts) == 2 and "helperCount, toy_even" in prompts[1]
     assert result.leaks == [] and "$c(n)" in result.statement
+
+
+TERM_SOURCE = """/-- A doc comment with := inside. -/
+theorem term_thm (h : a := b) {x : Nat} :
+    P x :=
+  (foo (bar x)
+    h).1
+"""
+
+
+class FakeFileClient:
+    def __init__(self):
+        self.asked = []
+
+    def get_term_goal(self, line, character):
+        self.asked.append((line, character))
+        return {"goal": f"⊢ type at {line}:{character}"} if line != 13 else None
+
+
+def term_decl(source=TERM_SOURCE, line=10):
+    count = len(source.splitlines())
+    raw = [
+        {
+            "name": "term_thm",
+            "kind": "theorem",
+            "type": "T",
+            "doc": None,
+            "line": line,
+            "endLine": line + count - 1,
+            "deps": [],
+        }
+    ]
+    padded = "\n" * (line - 1) + source
+    return build_decls("Toy.Basic", padded, raw, [])[0]
+
+
+def test_the_proof_body_starts_after_the_first_top_level_assignment():
+    assert termgoals.body_start(term_decl()) == (13, 0)
+    inline = term_decl("theorem t (h : a := b) : P := foo h\n")
+    assert termgoals.body_start(inline) == (10, 30)
+    assert termgoals.body_start(term_decl("axiom nothing : P\n")) is None
+
+
+def test_term_goals_become_one_step_per_body_line():
+    decl = term_decl()
+    client = FakeFileClient()
+    steps = termgoals.term_steps(client, decl)
+    assert client.asked == [(12, 2), (13, 4)]
+    assert [(s.line, s.col, s.tactic, s.goals) for s in steps] == [
+        (13, 2, "(foo (bar x)", "⊢ type at 12:2")
+    ]
+
+
+def test_a_term_mode_proof_is_sent_as_a_term_record_and_grounded():
+    decl = term_decl()
+    decl.steps = termgoals.term_steps(FakeFileClient(), decl)
+    decl.term_mode = True
+    prompts = []
+
+    def chat(system, user, schema):
+        prompts.append(user)
+        return json.dumps(
+            {
+                "statement": "s",
+                "steps": [
+                    {"start_line": 13, "end_line": 13, "explanation": "apply foo"},
+                    {"start_line": 11, "end_line": 11, "explanation": "the signature"},
+                ],
+                "summary": "p",
+                "notation": [],
+            }
+        )
+
+    result = explain.explain_decl(decl, {}, {}, chat)
+    assert "<term_record>\n[line 13] (foo (bar x)\nexpected type at the start" in prompts[0]
+    assert "<tactic_record>" not in prompts[0]
+    assert [s.grounded for s in result.steps] == [True, False]
