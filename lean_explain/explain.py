@@ -3,13 +3,14 @@
 import hashlib
 import json
 import re
+from collections import Counter
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from lean_explain.extract import Decl, Step
 
-PROMPT_VERSION = "6"
+PROMPT_VERSION = "7"
 
 SYSTEM = """\
 You are writing the reader's guide to a formal proof. The reader is a research
@@ -27,7 +28,8 @@ You receive one declaration at a time:
 - <notation>: notation already chosen for earlier lemmas in this write-up.
 - <tactic_record>: every tactic in the proof in source order, each with the goal state
   Lean reported immediately before it ran. Indentation shows nesting: an indented tactic
-  runs inside the one above it.
+  runs inside the one above it. A tactic that ran on many goals, as in a case analysis,
+  is shown for its first two goals with the total count.
 
 Follow the proof as written. Report the steps Lean took, in the order it took them, and
 use the goal states to say what each step establishes: the goal before the next tactic
@@ -252,34 +254,70 @@ def numbered_source(decl: Decl) -> str:
     )
 
 
-def render_step(step: Step, depth: int) -> str:
+REPEATS_SHOWN = 2
+
+# One entry of the tactic record: the step, its nesting depth, and how many goals it ran on.
+Record = tuple[Step, int, int]
+
+
+def span(step: Step) -> tuple[int, int, int, int]:
+    return (step.line, step.col, step.end_line, step.end_col)
+
+
+def render_step(step: Step, depth: int, runs: int = 1) -> str:
     indent = "  " * depth
     tactic = step.tactic if len(step.tactic) <= 400 else step.tactic[:400] + " ..."
-    body = f"[lines {step.line}-{step.end_line}] {tactic}\ngoals before:\n{step.goals}"
+    where = f"lines {step.line}-{step.end_line}"
+    if runs > REPEATS_SHOWN:
+        where += f", ran on {runs} goals of which {REPEATS_SHOWN} are shown"
+    body = f"[{where}] {tactic}\ngoals before:\n{step.goals}"
     return "\n".join(indent + line for line in body.splitlines())
 
 
+def collapse_repeats(steps: list[Step]) -> list[tuple[Step, int]]:
+    """Keep the first few runs of each tactic, with the number of goals it ran on.
+
+    A tactic after `<;>` or under `all_goals` runs once per case, so a ten-line proof by
+    case analysis can produce hundreds of near-identical records.
+    """
+    runs = Counter(span(step) for step in steps)
+    seen: Counter = Counter()
+    kept = []
+    for step in steps:
+        seen[span(step)] += 1
+        if seen[span(step)] <= REPEATS_SHOWN:
+            kept.append((step, runs[span(step)]))
+    return kept
+
+
 def nesting_depths(steps: list[Step]) -> list[int]:
-    """Depth of each step: how many earlier steps have a source span containing it."""
+    """Depth of each step: how many earlier steps have a source span strictly containing it."""
     depths = []
     for i, step in enumerate(steps):
         start, end = (step.line, step.col), (step.end_line, step.end_col)
         depths.append(
-            sum((o.line, o.col) <= start and end <= (o.end_line, o.end_col) for o in steps[:i])
+            sum(
+                (o.line, o.col) <= start
+                and end <= (o.end_line, o.end_col)
+                and span(o) != span(step)
+                for o in steps[:i]
+            )
         )
     return depths
 
 
-def chunk_steps(steps: list[Step], max_chars: int) -> list[list[tuple[Step, int]]]:
-    """Split the tactic record at top-level steps so each part fits in one request."""
-    chunks: list[list[tuple[Step, int]]] = [[]]
+def chunk_steps(steps: list[Step], max_chars: int) -> list[list[Record]]:
+    """Collapse repeated runs, then split at top-level steps so each part fits a request."""
+    kept = collapse_repeats(steps)
+    depths = nesting_depths([step for step, _ in kept])
+    chunks: list[list[Record]] = [[]]
     size = 0
-    for step, depth in zip(steps, nesting_depths(steps), strict=True):
-        cost = len(render_step(step, depth))
+    for (step, runs), depth in zip(kept, depths, strict=True):
+        cost = len(render_step(step, depth, runs))
         if depth == 0 and chunks[-1] and size + cost > max_chars:
             chunks.append([])
             size = 0
-        chunks[-1].append((step, depth))
+        chunks[-1].append((step, depth, runs))
         size += cost
     return chunks
 
@@ -385,7 +423,7 @@ def explain_decl(
     header = render_header(decl, known, cited, notation)
     chunks = chunk_steps(decl.steps, max_chars)
     if len(chunks) == 1:
-        record = "\n\n".join(render_step(s, d) for s, d in chunks[0]) or "(term-mode proof)"
+        record = "\n\n".join(render_step(*r) for r in chunks[0]) or "(term-mode proof)"
         reply = ask(
             chat,
             SYSTEM,
@@ -414,7 +452,7 @@ def explain_decl(
     progress: list[str] = []
     introduced: list[dict] = []
     for index, chunk in enumerate(chunks):
-        record = "\n\n".join(render_step(s, d) for s, d in chunk)
+        record = "\n\n".join(render_step(*r) for r in chunk)
         so_far = "\n".join(progress) or "(this is the first part)"
         seen = {**notation, **{entry["lean"]: entry for entry in introduced}}
         reply = ask(

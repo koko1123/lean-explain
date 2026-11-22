@@ -161,7 +161,7 @@ def test_grounding_flags_invented_lines_and_accepts_lines_inside_a_tactic():
 def test_long_proofs_are_split_at_top_level_steps():
     even = toy_decls()[0]
     chunks = explain.chunk_steps(even.steps, max_chars=1)
-    assert [[s.line for s, _ in chunk] for chunk in chunks] == [[5], [6, 7], [8]]
+    assert [[r[0].line for r in chunk] for chunk in chunks] == [[5], [6, 7], [8]]
     calls = []
     result = explain.explain_decl(even, {}, {}, fake_chat(calls), max_chars=1)
     assert len(calls) == 4
@@ -399,3 +399,19 @@ def test_an_empty_reply_is_retried_and_never_cached(tmp_path):
     assert explain.ask(cached, "sys", "user", explain.FINAL_SCHEMA)["statement"] == "s"
     assert "empty reply (finish_reason=length)" in attempts[1]
     assert len(list(tmp_path.iterdir())) == 1
+
+
+def test_a_tactic_run_on_many_cases_is_shown_twice_with_its_count():
+    cases = [tactic("simp_all", 5, 4, 5, 12) for _ in range(40)]
+    for index, case in enumerate(cases):
+        case["goals"] = f"case {index}"
+    decl = build_decls(
+        "Toy.Basic", SOURCE, DECLS[:1], [tactic("rcases u <;> simp_all", 5, 2, 5, 12), *cases]
+    )[0]
+    (chunk,) = explain.chunk_steps(decl.steps, max_chars=10**9)
+    assert [(r[0].goals, r[1], r[2]) for r in chunk] == [
+        ("goal at 5", 0, 1),
+        ("case 0", 1, 40),
+        ("case 1", 1, 40),
+    ]
+    assert "ran on 40 goals of which 2 are shown" in explain.render_step(*chunk[1])
