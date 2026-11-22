@@ -445,3 +445,32 @@ def test_tactics_go_to_the_innermost_declaration_and_gaps_are_skipped():
     assert [s.line for s in steps["outer"]] == [3, 12]
     assert [s.line for s in steps["inner"]] == [6]
     assert [s.line for s in steps["later"]] == [35]
+
+
+def test_lean_identifiers_inside_mathematics_are_found_and_repaired_once():
+    use = toy_decls()[1]
+    use.deps.append(type(use.deps[0])("Toy.Basic.helperCount", "Toy.Basic"))
+    identifiers = explain.project_identifiers(use, "Toy")
+    assert identifiers == {"toy_even", "toy_use", "helperCount"}
+    leaky = r"Then $\mathrm{helperCount}(n) \le n$, by `toy_even`, and \(toy\_even\) again."
+    assert explain.find_leaks([leaky, "plain helperCount in prose"], identifiers) == [
+        "helperCount",
+        "toy_even",
+    ]
+    prompts = []
+
+    def chat(system, user, schema):
+        prompts.append(user)
+        text = leaky if len(prompts) == 1 else "Then $c(n) \\le n$ (`helperCount`)."
+        return json.dumps(
+            {
+                "statement": text,
+                "steps": [{"start_line": 11, "end_line": 11, "explanation": "s"}],
+                "summary": "p",
+                "notation": [],
+            }
+        )
+
+    result = explain.explain_decl(use, {}, {}, chat)
+    assert len(prompts) == 2 and "helperCount, toy_even" in prompts[1]
+    assert result.leaks == [] and "$c(n)" in result.statement

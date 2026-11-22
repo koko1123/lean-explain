@@ -79,7 +79,9 @@ def run_explain(args: argparse.Namespace, cache: Path) -> None:
         handle.write(assemble.pairs_jsonl(plan, explanations))
     print(
         f"wrote {out / f'{args.decl}.md'} and .html "
-        f"(grounding {side['grounding']:.0%}, spent ${budget.spent_usd:.2f})"
+        f"(grounding {side['grounding']:.0%}, "
+        f"{side['lemmas_with_leaked_names']} of {len(explanations)} lemmas leak Lean names, "
+        f"spent ${budget.spent_usd:.2f})"
     )
 
 

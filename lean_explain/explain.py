@@ -10,7 +10,7 @@ from pathlib import Path
 
 from lean_explain.extract import Decl, Step
 
-PROMPT_VERSION = "7"
+PROMPT_VERSION = "8"
 
 SYSTEM = """\
 You are writing the reader's guide to a formal proof. The reader is a research
@@ -68,6 +68,14 @@ LaTeX special character such as #. Reuse the notation in <notation> exactly so t
 write-up reads as one document, and report any notation you introduce. When a step
 applies a named result, say what that result states and give its Lean name once in
 backticks so the reader can look it up.
+
+Objects the project defines for itself have no standard name, and a formalization written
+by a machine is full of them. Name each one the first time it appears: a short
+descriptive phrase and a symbol ("the $p$-norm distance $d_p(I,v)$ from the target of the
+instance $I$ to the lattice point $Bv$"), with its Lean identifier once in backticks
+beside it, then use the symbol. Record the symbol under notation. A Lean identifier never
+goes inside dollar signs, because there it reads as mathematics the reader is expected to
+know. This is checked mechanically.
 
 Cite lines. Every step gives the first and last source line it covers. The lines must
 fall inside this declaration's proof, and the steps must appear in source order and
@@ -143,6 +151,14 @@ FULL_SCHEMA = object_schema(statement=TEXT, steps=STEPS, summary=TEXT, notation=
 CHUNK_SCHEMA = object_schema(steps=STEPS, progress=TEXT, notation=NOTATION)
 FINAL_SCHEMA = object_schema(statement=TEXT, summary=TEXT)
 
+REPAIR_TASK = (
+    "The draft below explains this proof, but these Lean identifiers appear inside "
+    "mathematics: {names}. For each one, introduce a descriptive phrase and a symbol at "
+    "its first use, give the identifier once in backticks beside it, record the symbol "
+    "under notation, and use the symbol everywhere else. Change nothing else. Reply with "
+    "the corrected explanation in full."
+)
+
 REVIEW_TASK = (
     "The draft below explains this proof. Check every sentence of it against the tactic "
     "record, the goal states, and the statements of the cited results, and correct what is "
@@ -177,6 +193,8 @@ class Explanation:
     summary: str
     steps: list[ExplainedStep] = field(default_factory=list)
     notation: list[dict] = field(default_factory=list)
+    # Lean identifiers found inside mathematics, where the reader cannot look them up.
+    leaks: list[str] = field(default_factory=list)
 
     @property
     def grounding(self) -> float:
@@ -395,6 +413,35 @@ def ask(chat: Chat, system: str, user: str, schema: dict) -> dict:
     raise ValueError(f"no usable reply after two attempts ({problem.strip()})")
 
 
+MATH = re.compile(r"\$\$(.+?)\$\$|\$(.+?)\$|\\\((.+?)\\\)|\\\[(.+?)\\\]", re.DOTALL)
+WORD = re.compile(r"[A-Za-z_][A-Za-z0-9_']*")
+
+
+def project_identifiers(decl: Decl, root: str) -> set[str]:
+    """Names from the project that would be recognisable as Lean if they leaked.
+
+    Only camelCase and snake_case names of four or more letters count; a short lowercase
+    name such as `card` or `rank` is also an ordinary mathematical word.
+    """
+    names = {decl.name} | {dep.name for dep in decl.deps if dep.module.split(".")[0] == root}
+    last = {name.split(".")[-1] for name in names}
+    return {n for n in last if len(n) >= 4 and ("_" in n or any(c.isupper() for c in n[1:]))}
+
+
+def find_leaks(texts: list[str], identifiers: set[str]) -> list[str]:
+    """Project identifiers that appear inside LaTeX mathematics in `texts`."""
+    found = set()
+    for text in texts:
+        for match in MATH.finditer(text):
+            segment = next(group for group in match.groups() if group).replace("\\_", "_")
+            found.update(word for word in WORD.findall(segment) if word in identifiers)
+    return sorted(found)
+
+
+def reply_texts(reply: dict) -> list[str]:
+    return [reply["statement"], reply["summary"], *(s["explanation"] for s in reply["steps"])]
+
+
 def ground(decl: Decl, raw_steps: list[dict]) -> list[ExplainedStep]:
     """Mark a step grounded when its cited lines lie in the declaration and overlap a tactic.
 
@@ -425,6 +472,7 @@ def explain_decl(
     Review applies to proofs that fit in one request.
     """
     notation = {} if notation is None else notation
+    identifiers = project_identifiers(decl, decl.module.split(".")[0])
     header = render_header(decl, known, cited, notation)
     chunks = chunk_steps(decl.steps, max_chars)
     if len(chunks) == 1:
@@ -444,6 +492,18 @@ def explain_decl(
                 f"<draft>\n{draft}\n</draft>\n\n{REVIEW_TASK}",
                 FULL_SCHEMA,
             )
+        leaks = find_leaks(reply_texts(reply), identifiers)
+        if leaks:
+            # One repair request, driven by the mechanical check.
+            draft = json.dumps(reply, ensure_ascii=False, indent=1)
+            reply = ask(
+                chat,
+                SYSTEM,
+                f"{header}<draft>\n{draft}\n</draft>\n\n"
+                + REPAIR_TASK.format(names=", ".join(leaks)),
+                FULL_SCHEMA,
+            )
+            leaks = find_leaks(reply_texts(reply), identifiers)
         return Explanation(
             decl.name,
             decl.module,
@@ -451,6 +511,7 @@ def explain_decl(
             reply["summary"],
             ground(decl, reply["steps"]),
             reply["notation"],
+            leaks,
         )
 
     raw_steps: list[dict] = []
@@ -475,6 +536,10 @@ def explain_decl(
         progress.append(reply["progress"])
         introduced.extend(reply["notation"])
     notes = "\n".join(progress)
+    # The statement is written last, so it sees the notation the parts introduced.
+    header = render_header(
+        decl, known, cited, {**notation, **{entry["lean"]: entry for entry in introduced}}
+    )
     final = ask(
         chat,
         SYSTEM,
@@ -490,6 +555,10 @@ def explain_decl(
         final["summary"],
         ground(decl, raw_steps),
         introduced,
+        find_leaks(
+            [final["statement"], final["summary"], *(s["explanation"] for s in raw_steps)],
+            identifiers,
+        ),
     )
 
 

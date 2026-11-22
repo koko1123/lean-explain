@@ -81,6 +81,7 @@ def sidecar(plan: Plan, explanations: list[Explanation], model: str) -> dict:
         "target": plan.order[-1].name,
         "model": model,
         "grounding": sum(s.grounded for s in steps) / len(steps) if steps else 1.0,
+        "lemmas_with_leaked_names": sum(bool(e.leaks) for e in explanations),
         "explanations": [asdict(e) for e in explanations],
         "cited": sorted(plan.cited),
     }
